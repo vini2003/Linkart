@@ -2,6 +2,8 @@ package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
+import com.github.vini2003.linkart.utility.RailUtils;
+import net.fabricmc.loader.util.sat4j.core.Vec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -82,8 +84,8 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
         if (!mixedWorld.isClient) {
             ServerWorld serverWorld = (ServerWorld) mixedWorld;
 
-            AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
-            AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) entity;
+            AbstractMinecartEntity next = (AbstractMinecartEntity) (Object) this;
+            AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) next;
 
             if (accessor.getPrevious() == null) {
                 accessor.setPrevious((AbstractMinecartEntity) serverWorld.getEntity(accessor.getPreviousUuid()));
@@ -93,12 +95,13 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
                 accessor.setNext((AbstractMinecartEntity) serverWorld.getEntity(accessor.getNextUuid()));
             }
 
-            if (accessor.getPrevious() != null && !((AbstractMinecartEntityAccessor) accessor.getPrevious()).getVelocities().isEmpty()) {
-                Vec3d position = ((AbstractMinecartEntityAccessor) accessor.getPrevious()).getVelocities().getFirst().getLeft();
+            if (accessor.getPrevious() != null) {
+                AbstractMinecartEntity previous = accessor.getPrevious();
 
-                if (!accessor.getPrevious().getRotationVector().equals(entity.getRotationVector()) && !accessor.getPrevious().getBlockPos().isWithinDistance(entity.getBlockPos(), LinkartDistanceRegistry.INSTANCE.getByKey(entity.getType()))) {
-                    entity.setPos(position.x, position.y, position.z);
-                    entity.setVelocity(0, 0, 0);
+                Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
+
+                if (nextVelocity != null) {
+                    next.setVelocity(nextVelocity);
                 }
             }
         }

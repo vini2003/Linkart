@@ -23,32 +23,6 @@ public class EntityMixin {
     @Shadow
     private Vec3d velocity;
 
-    private static void applyVelocity(AbstractMinecartEntity entity) {
-        AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) entity;
-
-        if (accessor.getPrevious() != null && !((AbstractMinecartEntityAccessor) accessor.getPrevious()).getVelocities().isEmpty()) {
-            Pair<Vec3d, Vec3d> velocity = ((AbstractMinecartEntityAccessor) accessor.getPrevious()).getVelocities().pop();
-
-            double followDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entity.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(accessor.getPrevious().getType()));
-            double currentDistance = entity.getPos().distanceTo(velocity.getLeft());
-
-            ((AbstractMinecartEntityAccessor) accessor.getPrevious()).getVelocities().clear();
-
-            if (currentDistance > followDistance) {
-                Vec3d basePosition = velocity.getLeft();
-                Vec3d nextPosition = entity.getPos();
-
-                entity.addVelocity(basePosition.x - nextPosition.x, entity.getVelocity().y, basePosition.z - nextPosition.z);
-            } else if (entity.dimension == accessor.getPrevious().dimension) {
-                entity.setVelocity(0, 0, 0);
-            }
-        }
-
-        if (accessor.getNext() != null) {
-            accessor.getVelocities().add(new Pair<>(entity.getPos(), entity.getVelocity()));
-        }
-    }
-
     @Inject(at = @At("RETURN"), method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;")
     void onToTag(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callbackInformationReturnable) {
         if ((Object) this instanceof AbstractMinecartEntity) {
@@ -78,14 +52,6 @@ public class EntityMixin {
             if (tag.containsUuid("previous")) {
                 accessor.setPreviousUuid(tag.getUuid("previous"));
             }
-        }
-    }
-
-    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/entity/Entity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V")
-    void onSetVelocity(Vec3d oldVelocity, CallbackInfo callbackInformation) {
-        if ((Object) this instanceof AbstractMinecartEntity) {
-            AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
-            applyVelocity(entity);
         }
     }
 }
