@@ -110,7 +110,7 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
                         previosuVelocity = nextVelocity;
                     }
 
-                    followCountdown = 5;
+                    followCountdown = 1;
                 } else {
                     --followCountdown;
                     next.setVelocity(previosuVelocity);
