@@ -41,11 +41,10 @@ public class RailUtils {
 		BlockPos position = pair.getLeft();
 		double distance = pair.getRight().getValue();
 
-		distance += (entityA.getX() - entityA.getBlockPos().getX()) + (entityB.getX() - entityB.getBlockPos().getX());
-		distance += (entityA.getZ() - entityA.getBlockPos().getZ()) + (entityB.getZ() - entityB.getBlockPos().getZ());
-		distance += (entityA.getY() - entityA.getBlockPos().getY()) + (entityB.getY() - entityB.getBlockPos().getY());
+		distance += (entityA.getX() - entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX());
+		distance += (entityA.getZ() - entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ());
 
-		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
+		double maximumDistance = 0.75; // = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
 		Vec3d velocity = Vec3d.ZERO;
 
