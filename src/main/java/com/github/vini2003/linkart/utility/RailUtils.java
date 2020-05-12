@@ -85,29 +85,19 @@ public class RailUtils {
 
 		RailPlacementHelper helper = new RailPlacementHelper(world, currentPosition, state);
 
-		if (distance.getValue() > 4) return false;
+		if (distance.getValue() > 8) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);
 
 		if (!cache.contains(helper.getNeighbors().get(0))) {
 			distance.getAndIncrement();
-			world.setBlockState(helper.getNeighbors().get(0).up().up().up().up(), Blocks.STONE.getDefaultState());
 			return step(world, cache, helper.getNeighbors().get(0), finalPosition, distance);
 		} else if (!cache.contains(helper.getNeighbors().get(1))) {
 			distance.getAndIncrement();
-			world.setBlockState(helper.getNeighbors().get(1).up().up().up().up(), Blocks.STONE.getDefaultState());
 			return step(world, cache, helper.getNeighbors().get(1), finalPosition, distance);
 		}
 
 		return false;
-	}
-
-	public static BlockPos[] getPossibleNeighbors(BlockPos initialPosition) {
-		return new BlockPos[] {
-				initialPosition.north(),		initialPosition.south(), 		initialPosition.west(), 		initialPosition.east(), 		initialPosition.up(), initialPosition.down(),
-				initialPosition.north().up(), 	initialPosition.south().up(), 	initialPosition.east().up(), 	initialPosition.west().up(),
-				initialPosition.north().down(), initialPosition.south().down(), initialPosition.east().down(), 	initialPosition.west().down()
-		};
 	}
 }
