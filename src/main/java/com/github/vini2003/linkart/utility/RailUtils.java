@@ -1,13 +1,13 @@
 package com.github.vini2003.linkart.utility;
 
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.RailPlacementHelper;
+import net.minecraft.block.*;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
@@ -36,7 +36,13 @@ public class RailUtils {
 	public static Vec3d getNextVelocity(AbstractMinecartEntity entityA, AbstractMinecartEntity entityB) {
 		Pair<BlockPos, MutableDouble> pair = getNextRail(entityA, entityB);
 
-		if (pair == null) return Vec3d.ZERO;
+		double maximumDistance = 0.75; // = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
+
+		if (pair == null && entityA.getPos().distanceTo(entityB.getPos()) > maximumDistance) {
+			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
+		} else if (pair == null) {
+			return Vec3d.ZERO;
+		}
 
 		BlockPos position = pair.getLeft();
 		double distance = pair.getRight().getValue();
@@ -44,25 +50,24 @@ public class RailUtils {
 		distance += (entityA.getX() - entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX());
 		distance += (entityA.getZ() - entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ());
 
-		double maximumDistance = 0.75; // = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
 		Vec3d velocity = Vec3d.ZERO;
 
 		if (distance > maximumDistance) {
 			if (position.getX() > entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x + 1, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x + .5, velocity.y, velocity.z);
 			} else if (position.getX() < entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x - 1, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x - .5, velocity.y, velocity.z);
 			}
 			if (position.getY() > entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y - 1, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y - .5, velocity.z);
 			} else if (position.getY() < entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y + 1, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y + .5, velocity.z);
 			}
 			if (position.getZ() > entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + 1);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + .5);
 			} else if (position.getZ() < entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - 1);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - .5);
 			}
 		}
 
@@ -76,7 +81,7 @@ public class RailUtils {
 
 		RailPlacementHelper helper = new RailPlacementHelper(world, currentPosition, state);
 
-		if (distance.getValue() > 5) return false;
+		if (distance.getValue() > 16) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);
