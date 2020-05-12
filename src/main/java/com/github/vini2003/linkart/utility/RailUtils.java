@@ -14,18 +14,22 @@ import org.apache.commons.lang3.mutable.MutableDouble;
 import java.util.*;
 
 public class RailUtils {
-	public static Pair<BlockPos, MutableDouble> getNextRail(AbstractMinecartEntity entityA, AbstractMinecartEntity entityB) {
-		BlockPos entityPosition = entityA.getBlockPos();
-		BlockPos finalPosition = entityB.getBlockPos();
+	public static Pair<BlockPos, MutableDouble> getNextRail(AbstractMinecartEntity next, AbstractMinecartEntity previous) {
+		BlockPos entityPosition = next.getBlockPos();
+		BlockPos finalPosition = previous.getBlockPos();
 
-		for (BlockPos initialPosition : getPossibleNeighbors(entityPosition)) {
+		if (!(next.world.getBlockState(next.getBlockPos()).getBlock() instanceof AbstractRailBlock)) return null;
+
+		RailPlacementHelper helper = new RailPlacementHelper(next.world, next.getBlockPos(), next.world.getBlockState(next.getBlockPos()));
+
+		for (BlockPos initialPosition : helper.getNeighbors()) {
 			Set<BlockPos> cache = new HashSet<>();
 
 			cache.add(entityPosition);
 
 			MutableDouble distance = new MutableDouble(0);
 
-			if (step(entityA.world, cache, initialPosition, finalPosition, distance)) {
+			if (step(next.world, cache, initialPosition, finalPosition, distance)) {
 				return new Pair<>(initialPosition, distance);
 			}
 		}
@@ -81,16 +85,18 @@ public class RailUtils {
 
 		RailPlacementHelper helper = new RailPlacementHelper(world, currentPosition, state);
 
-		if (distance.getValue() > 16) return false;
+		if (distance.getValue() > 4) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);
 
 		if (!cache.contains(helper.getNeighbors().get(0))) {
 			distance.getAndIncrement();
+			world.setBlockState(helper.getNeighbors().get(0).up().up().up().up(), Blocks.STONE.getDefaultState());
 			return step(world, cache, helper.getNeighbors().get(0), finalPosition, distance);
 		} else if (!cache.contains(helper.getNeighbors().get(1))) {
 			distance.getAndIncrement();
+			world.setBlockState(helper.getNeighbors().get(1).up().up().up().up(), Blocks.STONE.getDefaultState());
 			return step(world, cache, helper.getNeighbors().get(1), finalPosition, distance);
 		}
 
