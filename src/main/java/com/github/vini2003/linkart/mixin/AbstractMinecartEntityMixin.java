@@ -132,7 +132,7 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
                     return;
                 }
 
-                check = accessor == null ? null : accessor.getNext();
+                check = accessor.getNext();
             } while (check != null);
 
             check = (AbstractMinecartEntity) entity;
@@ -143,7 +143,7 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
                     return;
                 }
 
-                check = accessor == null ? null : accessor.getPrevious();
+                check = accessor.getPrevious();
 
             } while (check != null);
         }

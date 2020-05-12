@@ -10,13 +10,13 @@ public class LinkartDistanceRegistry {
     private static final HashMap<EntityType<?>, Double> DISTANCES = new HashMap<>();
 
     static {
-        INSTANCE.register(EntityType.MINECART, 1.75);
-        INSTANCE.register(EntityType.CHEST_MINECART, 1.75);
-        INSTANCE.register(EntityType.FURNACE_MINECART, 1.75);
-        INSTANCE.register(EntityType.HOPPER_MINECART, 1.75);
-        INSTANCE.register(EntityType.TNT_MINECART, 1.75);
-        INSTANCE.register(EntityType.SPAWNER_MINECART, 1.75);
-        INSTANCE.register(EntityType.COMMAND_BLOCK_MINECART, 1.75);
+        INSTANCE.register(EntityType.MINECART, 1.25);
+        INSTANCE.register(EntityType.CHEST_MINECART, 1.25);
+        INSTANCE.register(EntityType.FURNACE_MINECART, 1.25);
+        INSTANCE.register(EntityType.HOPPER_MINECART, 1.25);
+        INSTANCE.register(EntityType.TNT_MINECART, 1.25);
+        INSTANCE.register(EntityType.SPAWNER_MINECART, 1.25);
+        INSTANCE.register(EntityType.COMMAND_BLOCK_MINECART, 1.25);
     }
 
     private LinkartDistanceRegistry() {

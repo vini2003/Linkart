@@ -54,4 +54,21 @@ public class EntityMixin {
             }
         }
     }
+
+    @Inject(method="remove", at=@At("HEAD"))
+    void removeLink(CallbackInfo ci) {
+        if ((Object)this instanceof AbstractMinecartEntity) {
+            AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) this;
+            AbstractMinecartEntityAccessor next = (AbstractMinecartEntityAccessor)accessor.getNext();
+            AbstractMinecartEntityAccessor previous = (AbstractMinecartEntityAccessor)accessor.getPrevious();
+
+            if (next != null) {
+                next.setPrevious(null);
+            }
+
+            if (previous != null) {
+                previous.setNext(null);
+            }
+        }
+    }
 }
