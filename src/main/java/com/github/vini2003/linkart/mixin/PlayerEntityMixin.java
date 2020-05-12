@@ -47,7 +47,7 @@ public class PlayerEntityMixin {
                     playerEntity.sendMessage(new LiteralText("§rMinecart at §a" + (int) x1 + "§r, §a" + (int) y1 + "§r, §a" + (int) z1 + "§r selected as parent!"));
                 }
 
-                callbackInformationReturnable.setReturnValue(ActionResult.PASS);
+                callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
                 callbackInformationReturnable.cancel();
 
                 return;
@@ -56,7 +56,7 @@ public class PlayerEntityMixin {
                 AbstractMinecartEntityAccessor accessorB = (AbstractMinecartEntityAccessor) entityB;
 
                 if (entityA == entityB) {
-                    callbackInformationReturnable.setReturnValue(ActionResult.PASS);
+                    callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
                     callbackInformationReturnable.cancel();
 
                     return;
