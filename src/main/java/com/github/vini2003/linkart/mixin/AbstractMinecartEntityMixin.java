@@ -31,6 +31,10 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
     private AbstractMinecartEntity next;
     @Unique
     private UUID previosUuid;
+    @Unique
+    private int followCountdown = 5;
+    @Unique
+    private Vec3d previosuVelocity = Vec3d.ZERO;
 
     @Override
     public AbstractMinecartEntity getPrevious() {
@@ -98,10 +102,18 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
             if (accessor.getPrevious() != null) {
                 AbstractMinecartEntity previous = accessor.getPrevious();
 
-                Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
+                if (followCountdown <= 0) {
+                    Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
 
-                if (nextVelocity != null) {
-                    next.setVelocity(nextVelocity);
+                    if (nextVelocity != null) {
+                        next.setVelocity(nextVelocity);
+                        previosuVelocity = nextVelocity;
+                    }
+
+                    followCountdown = 5;
+                } else {
+                    --followCountdown;
+                    next.setVelocity(previosuVelocity);
                 }
             }
         }
