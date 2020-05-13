@@ -110,7 +110,7 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
                         previosuVelocity = nextVelocity;
                     }
 
-                    followCountdown = 1;
+                    followCountdown = 0;
                 } else {
                     --followCountdown;
                     next.setVelocity(previosuVelocity);
@@ -121,31 +121,9 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)
     void onPushAway(Entity entity, CallbackInfo callbackInformation) {
-        if (entity instanceof AbstractMinecartEntityAccessor) {
-            AbstractMinecartEntityAccessor accessor;
-
-            AbstractMinecartEntity check = (AbstractMinecartEntity) entity;
-            do {
-                accessor = (AbstractMinecartEntityAccessor) check;
-                if (entity == (Object) this) {
-                    callbackInformation.cancel();
-                    return;
-                }
-
-                check = accessor.getNext();
-            } while (check != null);
-
-            check = (AbstractMinecartEntity) entity;
-            do {
-                accessor = (AbstractMinecartEntityAccessor) check;
-                if (entity == (Object) this) {
-                    callbackInformation.cancel();
-                    return;
-                }
-
-                check = accessor.getPrevious();
-
-            } while (check != null);
+        if ((next != null && next == entity) || (previous != null && previous == entity)) {
+            callbackInformation.cancel();
+            return;
         }
     }
 }

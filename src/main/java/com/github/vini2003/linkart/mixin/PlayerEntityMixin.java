@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
-    @Inject(at = @At(value = "HEAD", target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Z"), method = "interact(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "interact(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", cancellable = true)
     void onInteract(Entity entityA, Hand hand, CallbackInfoReturnable<ActionResult> callbackInformationReturnable) {
         if (entityA instanceof AbstractMinecartEntity && hand == Hand.MAIN_HAND && entityA.world.isClient) {
             PlayerEntity playerEntity = (PlayerEntity) (Object) this;
@@ -70,7 +70,7 @@ public class PlayerEntityMixin {
 
                 if (entityA.getPos().distanceTo(entityB.getPos()) > mD * 4) {
                     if (playerEntity.world.isClient) {
-                        playerEntity.sendMessage(new LiteralText("§cFailed to link minecarts; distance too big: over " + (int) mD + "!"));
+                        playerEntity.sendMessage(new LiteralText("§cFailed to link minecarts; distance too big: over " + (int) mD * 4 + "!"));
 
                         Linkart.SELECTED_ENTITIES.put(playerEntity, null);
 

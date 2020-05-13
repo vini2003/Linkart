@@ -40,7 +40,7 @@ public class RailUtils {
 	public static Vec3d getNextVelocity(AbstractMinecartEntity entityA, AbstractMinecartEntity entityB) {
 		Pair<BlockPos, MutableDouble> pair = getNextRail(entityA, entityB);
 
-		double maximumDistance = 0.75; // = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
+		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
 		if (pair == null && entityA.getPos().distanceTo(entityB.getPos()) > maximumDistance) {
 			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
@@ -54,24 +54,23 @@ public class RailUtils {
 		distance += (entityA.getX() - entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX());
 		distance += (entityA.getZ() - entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ());
 
-
 		Vec3d velocity = Vec3d.ZERO;
 
 		if (distance > maximumDistance) {
 			if (position.getX() > entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x + .5, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x + 0.5 * distance, velocity.y, velocity.z);
 			} else if (position.getX() < entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x - .5, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x - 0.5 * distance, velocity.y, velocity.z);
 			}
 			if (position.getY() > entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y - .5, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y - 0.5 * distance, velocity.z);
 			} else if (position.getY() < entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y + .5, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y + 0.5 * distance, velocity.z);
 			}
 			if (position.getZ() > entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + .5);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + 0.5 * distance);
 			} else if (position.getZ() < entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - .5);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - 0.5 * distance);
 			}
 		}
 
