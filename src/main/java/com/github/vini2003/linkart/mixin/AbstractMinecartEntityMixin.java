@@ -23,18 +23,15 @@ import java.util.UUID;
 public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccessor {
     @Unique
     UUID nextUuid;
-    @Unique
-    private final ArrayDeque<Pair<Vec3d, Vec3d>> velocities = new ArrayDeque<>();
+
     @Unique
     private AbstractMinecartEntity previous;
+
     @Unique
     private AbstractMinecartEntity next;
+
     @Unique
     private UUID previosUuid;
-    @Unique
-    private int followCountdown = 5;
-    @Unique
-    private Vec3d previosuVelocity = Vec3d.ZERO;
 
     @Override
     public AbstractMinecartEntity getPrevious() {
@@ -76,11 +73,6 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
         this.nextUuid = uuid;
     }
 
-    @Override
-    public ArrayDeque<Pair<Vec3d, Vec3d>> getVelocities() {
-        return velocities;
-    }
-
     @Inject(at = @At("HEAD"), method = "tick()V")
     void onTick(CallbackInfo callbackInformation) {
         World mixedWorld = ((AbstractMinecartEntity) (Object) this).world;
@@ -102,18 +94,10 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
             if (accessor.getPrevious() != null) {
                 AbstractMinecartEntity previous = accessor.getPrevious();
 
-                if (followCountdown <= 0) {
-                    Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
+                Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
 
-                    if (nextVelocity != null) {
-                        next.setVelocity(nextVelocity);
-                        previosuVelocity = nextVelocity;
-                    }
-
-                    followCountdown = 0;
-                } else {
-                    --followCountdown;
-                    next.setVelocity(previosuVelocity);
+                if (nextVelocity != null) {
+                    next.setVelocity(nextVelocity);
                 }
             }
         }
@@ -121,9 +105,30 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)
     void onPushAway(Entity entity, CallbackInfo callbackInformation) {
-        if ((next != null && next == entity) || (previous != null && previous == entity)) {
-            callbackInformation.cancel();
-            return;
+        if (entity instanceof AbstractMinecartEntityAccessor) {
+            AbstractMinecartEntityAccessor accessor;
+
+            AbstractMinecartEntity check = (AbstractMinecartEntity) entity;
+            do {
+                accessor = (AbstractMinecartEntityAccessor) check;
+                if (check == (Object) this) {
+                    callbackInformation.cancel();
+                    return;
+                }
+
+                check = accessor.getNext();
+            } while (check != null);
+
+            check = (AbstractMinecartEntity) entity;
+            do {
+                accessor = (AbstractMinecartEntityAccessor) check;
+                if (check == (Object) this) {
+                    callbackInformation.cancel();
+                    return;
+                }
+
+                check = accessor.getPrevious();
+            } while (check != null);
         }
     }
 }

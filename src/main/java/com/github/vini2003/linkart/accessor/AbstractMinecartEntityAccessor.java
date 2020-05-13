@@ -23,6 +23,4 @@ public interface AbstractMinecartEntityAccessor {
     UUID getNextUuid();
 
     void setNextUuid(UUID uuid);
-
-    ArrayDeque<Pair<Vec3d, Vec3d>> getVelocities();
 }
