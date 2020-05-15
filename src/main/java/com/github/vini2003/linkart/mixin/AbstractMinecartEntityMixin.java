@@ -2,6 +2,7 @@ package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
+import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.github.vini2003.linkart.utility.RailUtils;
 import net.fabricmc.loader.util.sat4j.core.Vec;
 import net.minecraft.entity.Entity;
@@ -35,6 +36,10 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Override
     public AbstractMinecartEntity getPrevious() {
+        if (previous == null && getPreviousUuid() != null) {
+            previous = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getPreviousUuid());
+        }
+
         return previous;
     }
 
@@ -45,6 +50,10 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Override
     public AbstractMinecartEntity getNext() {
+        if (next == null && getNextUuid() != null) {
+            next = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getNextUuid());
+        }
+
         return next;
     }
 
@@ -78,18 +87,8 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
         World mixedWorld = ((AbstractMinecartEntity) (Object) this).world;
 
         if (!mixedWorld.isClient) {
-            ServerWorld serverWorld = (ServerWorld) mixedWorld;
-
             AbstractMinecartEntity next = (AbstractMinecartEntity) (Object) this;
             AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) next;
-
-            if (accessor.getPrevious() == null) {
-                accessor.setPrevious((AbstractMinecartEntity) serverWorld.getEntity(accessor.getPreviousUuid()));
-            }
-
-            if (accessor.getNext() == null) {
-                accessor.setNext((AbstractMinecartEntity) serverWorld.getEntity(accessor.getNextUuid()));
-            }
 
             if (accessor.getPrevious() != null) {
                 AbstractMinecartEntity previous = accessor.getPrevious();
@@ -105,30 +104,8 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)
     void onPushAway(Entity entity, CallbackInfo callbackInformation) {
-        if (entity instanceof AbstractMinecartEntityAccessor) {
-            AbstractMinecartEntityAccessor accessor;
-
-            AbstractMinecartEntity check = (AbstractMinecartEntity) entity;
-            do {
-                accessor = (AbstractMinecartEntityAccessor) check;
-                if (check == (Object) this) {
-                    callbackInformation.cancel();
-                    return;
-                }
-
-                check = accessor.getNext();
-            } while (check != null);
-
-            check = (AbstractMinecartEntity) entity;
-            do {
-                accessor = (AbstractMinecartEntityAccessor) check;
-                if (check == (Object) this) {
-                    callbackInformation.cancel();
-                    return;
-                }
-
-                check = accessor.getPrevious();
-            } while (check != null);
+        if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity)) {
+            callbackInformation.cancel();
         }
     }
 }
