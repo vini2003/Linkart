@@ -49,9 +49,6 @@ public class LinkartLinkerRegistry {
     }
 
     public void register(EntityType<?> key, Item value) {
-        if (ENTRIES.get(key) == null) {
-            ENTRIES.put(key, new HashSet<>());
-        }
-        ENTRIES.get(key).add(value);
+        ENTRIES.computeIfAbsent(key, k -> new HashSet<>()).add(value);
     }
 }

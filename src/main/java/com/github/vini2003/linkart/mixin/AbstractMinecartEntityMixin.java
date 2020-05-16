@@ -1,14 +1,11 @@
 package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
-import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.github.vini2003.linkart.utility.RailUtils;
-import net.fabricmc.loader.util.sat4j.core.Vec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayDeque;
 import java.util.UUID;
 
 @Mixin(AbstractMinecartEntity.class)
@@ -32,7 +28,7 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
     private AbstractMinecartEntity next;
 
     @Unique
-    private UUID previosUuid;
+    private UUID previousUuid;
 
     @Override
     public AbstractMinecartEntity getPrevious() {
@@ -64,12 +60,12 @@ public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccess
 
     @Override
     public UUID getPreviousUuid() {
-        return previosUuid;
+        return previousUuid;
     }
 
     @Override
     public void setPreviousUuid(UUID uuid) {
-        this.previosUuid = uuid;
+        this.previousUuid = uuid;
     }
 
     @Override

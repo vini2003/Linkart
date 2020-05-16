@@ -1,29 +1,21 @@
 package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
-import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import com.github.vini2003.linkart.utility.CollisionUtils;
-import com.google.common.collect.ImmutableSet;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Pair;
-import net.minecraft.util.ReusableStream;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -31,9 +23,7 @@ public abstract class EntityMixin {
     public World world;
 
     @Shadow
-    private Vec3d velocity;
-
-    @Shadow public abstract Box getBoundingBox();
+    public abstract Box getBoundingBox();
 
     @Inject(at = @At("RETURN"), method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;")
     void onToTag(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callbackInformationReturnable) {
@@ -69,10 +59,10 @@ public abstract class EntityMixin {
 
     @Inject(at = @At("HEAD"), method = "remove")
     void removeLink(CallbackInfo ci) {
-        if ((Object)this instanceof AbstractMinecartEntity) {
+        if ((Object) this instanceof AbstractMinecartEntity) {
             AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) this;
-            AbstractMinecartEntityAccessor next = (AbstractMinecartEntityAccessor)accessor.getNext();
-            AbstractMinecartEntityAccessor previous = (AbstractMinecartEntityAccessor)accessor.getPrevious();
+            AbstractMinecartEntityAccessor next = (AbstractMinecartEntityAccessor) accessor.getNext();
+            AbstractMinecartEntityAccessor previous = (AbstractMinecartEntityAccessor) accessor.getPrevious();
 
             if (next != null) {
                 next.setPrevious(null);

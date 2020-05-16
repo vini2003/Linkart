@@ -29,12 +29,12 @@ public class PlayerEntityMixin {
             PlayerEntity playerEntity = (PlayerEntity) (Object) this;
             Item heldItem = playerEntity.getStackInHand(hand).getItem();
 
-			if (playerEntity.getStackInHand(hand).getItem() != LinkartItems.LINKER_ITEM) {
-				return;
-			}
-			if (LinkartLinkerRegistry.INSTANCE.getByKey(entityA.getType()).stream().noneMatch(item -> item == heldItem)) {
-				return;
-			}
+            if (playerEntity.getStackInHand(hand).getItem() != LinkartItems.LINKER_ITEM) {
+                return;
+            }
+            if (LinkartLinkerRegistry.INSTANCE.getByKey(entityA.getType()).stream().noneMatch(item -> item == heldItem)) {
+                return;
+            }
 
             double x1 = entityA.getX();
             double y1 = entityA.getY();
@@ -47,10 +47,6 @@ public class PlayerEntityMixin {
                     playerEntity.sendMessage(new LiteralText("§rMinecart at §a" + (int) x1 + "§r, §a" + (int) y1 + "§r, §a" + (int) z1 + "§r selected as parent!"));
                 }
 
-                callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                callbackInformationReturnable.cancel();
-
-                return;
             } else {
                 AbstractMinecartEntity entityB = Linkart.SELECTED_ENTITIES.get(playerEntity);
                 AbstractMinecartEntityAccessor accessorB = (AbstractMinecartEntityAccessor) entityB;
@@ -99,9 +95,9 @@ public class PlayerEntityMixin {
 
                 ClientSidePacketRegistry.INSTANCE.sendToServer(LinkartNetworks.SELECTED_PACKET, buffer);
 
-                callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                callbackInformationReturnable.cancel();
             }
+            callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
+            callbackInformationReturnable.cancel();
         }
     }
 }
