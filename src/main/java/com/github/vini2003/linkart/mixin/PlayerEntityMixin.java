@@ -52,15 +52,38 @@ public class PlayerEntityMixin {
 
                 return;
             } else {
+                AbstractMinecartEntityAccessor accessorA = (AbstractMinecartEntityAccessor) entityA;
+
                 AbstractMinecartEntity entityB = Linkart.SELECTED_ENTITIES.get(playerEntity);
                 AbstractMinecartEntityAccessor accessorB = (AbstractMinecartEntityAccessor) entityB;
 
                 if (entityA == entityB) {
+                    Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+
+                    if (playerEntity.world.isClient) {
+                        playerEntity.sendMessage(new LiteralText("§cFailed to link minecarts; cannot link minecart with itself!"));
+                    }
+
                     callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
                     callbackInformationReturnable.cancel();
 
                     return;
                 }
+
+                if (accessorB.getPrevious() == entityA || accessorA.getNext() == entityB) {
+                    Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+
+                    if (playerEntity.world.isClient) {
+                        playerEntity.sendMessage(new LiteralText("§cFailed to link minecarts; cannot double-link minecarts!"));
+                    }
+
+                    callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
+                    callbackInformationReturnable.cancel();
+
+                    return;
+                }
+
+
 
                 double x2 = entityB.getX();
                 double y2 = entityB.getY();
