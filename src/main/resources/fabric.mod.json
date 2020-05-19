@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "com.github.vini2003.linkart.Linkart"
+    ],
+    "modmenu": [
+      "com.github.vini2003.linkart.integration.LinkartModMenuIntegration"
     ]
   },
   "mixins": [

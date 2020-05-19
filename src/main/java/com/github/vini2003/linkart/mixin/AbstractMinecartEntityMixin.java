@@ -5,6 +5,8 @@ import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.github.vini2003.linkart.utility.RailUtils;
 import net.fabricmc.loader.util.sat4j.core.Vec;
+import net.minecraft.block.AbstractRailBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -12,6 +14,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +24,7 @@ import java.util.ArrayDeque;
 import java.util.UUID;
 
 @Mixin(AbstractMinecartEntity.class)
-public class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccessor {
+public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccessor {
     @Unique
     UUID nextUuid;
 

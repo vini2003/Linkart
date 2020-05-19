@@ -15,6 +15,8 @@ public class Linkart implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        LinkartConfigurations.initialize();
+
         LinkartItemGroups.initialize();
         LinkartItems.initialize();
         LinkartNetworks.initialize();

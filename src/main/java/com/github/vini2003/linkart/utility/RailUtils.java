@@ -1,5 +1,6 @@
 package com.github.vini2003.linkart.utility;
 
+import com.github.vini2003.linkart.registry.LinkartConfigurations;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import net.minecraft.block.*;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -58,19 +59,19 @@ public class RailUtils {
 
 		if (distance > maximumDistance) {
 			if (position.getX() > entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x + 0.5 * distance, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.y, velocity.z);
 			} else if (position.getX() < entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x - 0.5 * distance, velocity.y, velocity.z);
+				velocity = new Vec3d(velocity.x - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.y, velocity.z);
 			}
 			if (position.getY() > entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y - 0.5 * distance, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.z);
 			} else if (position.getY() < entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y + 0.5 * distance, velocity.z);
+				velocity = new Vec3d(velocity.x, velocity.y + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.z);
 			}
 			if (position.getZ() > entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + 0.5 * distance);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance);
 			} else if (position.getZ() < entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - 0.5 * distance);
+				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance);
 			}
 		}
 
@@ -84,7 +85,7 @@ public class RailUtils {
 
 		RailPlacementHelper helper = new RailPlacementHelper(world, currentPosition, state);
 
-		if (distance.getValue() > 8) return false;
+		if (distance.getValue() > LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance()) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);

@@ -13,21 +13,20 @@ public class LinkartLinkerRegistry {
     public static final LinkartLinkerRegistry INSTANCE = new LinkartLinkerRegistry();
     private static final BiMap<EntityType<?>, Collection<Item>> ENTRIES = HashBiMap.create();
 
-    static {
-        INSTANCE.register(EntityType.MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.CHEST_MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.FURNACE_MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.HOPPER_MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.TNT_MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.SPAWNER_MINECART, LinkartItems.LINKER_ITEM);
-        INSTANCE.register(EntityType.COMMAND_BLOCK_MINECART, LinkartItems.LINKER_ITEM);
-    }
-
     private LinkartLinkerRegistry() {
+        // NO-OP
     }
 
     public static void initialize() {
-        // NO-OP
+        if (LinkartConfigurations.INSTANCE.getConfig().isLinkerEnabled()) {
+            INSTANCE.register(EntityType.MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.CHEST_MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.FURNACE_MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.HOPPER_MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.TNT_MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.SPAWNER_MINECART, LinkartItems.LINKER_ITEM);
+            INSTANCE.register(EntityType.COMMAND_BLOCK_MINECART, LinkartItems.LINKER_ITEM);
+        }
     }
 
     public Collection<EntityType<?>> getKeys() {

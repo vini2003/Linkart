@@ -6,7 +6,6 @@
   "mixins": [
     "AbstractMinecartEntityMixin",
     "EntityMixin",
-    "MinecartEntityRendererMixin",
     "PlayerEntityMixin"
   ],
   "client": [

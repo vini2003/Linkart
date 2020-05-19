@@ -4,6 +4,7 @@ import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -29,9 +30,6 @@ import java.util.stream.Stream;
 public abstract class EntityMixin {
     @Shadow
     public World world;
-
-    @Shadow
-    private Vec3d velocity;
 
     @Shadow public abstract Box getBoundingBox();
 
@@ -89,7 +87,7 @@ public abstract class EntityMixin {
         List<Entity> collisions = this.world.getEntities((Entity) (Object) this, getBoundingBox().stretch(movement));
 
         for (Entity entity : collisions) {
-            if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity)) {
+            if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity) && world.getBlockState(((AbstractMinecartEntity) (Object) this).getBlockPos()).getBlock() instanceof AbstractRailBlock) {
                 callbackInformationReturnable.setReturnValue(movement);
                 callbackInformationReturnable.cancel();
             }
