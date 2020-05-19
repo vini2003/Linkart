@@ -39,7 +39,7 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
 
     @Override
     public AbstractMinecartEntity getPrevious() {
-        if (previous == null && getPreviousUuid() != null) {
+        if (previous == null && getPreviousUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
             previous = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getPreviousUuid());
         }
 
@@ -49,11 +49,12 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
     @Override
     public void setPrevious(AbstractMinecartEntity previous) {
         this.previous = previous;
+        this.nextUuid = previous == null ? null : previous.getUuid();
     }
 
     @Override
     public AbstractMinecartEntity getNext() {
-        if (next == null && getNextUuid() != null) {
+        if (next == null && getNextUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
             next = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getNextUuid());
         }
 
@@ -63,6 +64,7 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
     @Override
     public void setNext(AbstractMinecartEntity next) {
         this.next = next;
+        this.nextUuid = next == null ? null : next.getUuid();
     }
 
     @Override

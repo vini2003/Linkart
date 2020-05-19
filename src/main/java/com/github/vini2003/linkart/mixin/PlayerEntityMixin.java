@@ -3,7 +3,6 @@ package com.github.vini2003.linkart.mixin;
 import com.github.vini2003.linkart.Linkart;
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import com.github.vini2003.linkart.registry.*;
-import com.github.vini2003.linkart.utility.TextUtils;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.container.PlayerContainer;
@@ -13,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.Item;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -33,15 +33,14 @@ import static com.github.vini2003.linkart.utility.TextUtils.literal;
 public class PlayerEntityMixin {
     @Shadow @Final public PlayerContainer playerContainer;
 
+    @Shadow private boolean reducedDebugInfo;
+
     @Inject(at = @At("HEAD"), method = "interact(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", cancellable = true)
     void onInteract(Entity entityA, Hand hand, CallbackInfoReturnable<ActionResult> callbackInformationReturnable) {
         if (entityA instanceof AbstractMinecartEntity && hand == Hand.MAIN_HAND && entityA.world.isClient) {
             PlayerEntity playerEntity = (PlayerEntity) (Object) this;
             Item heldItem = playerEntity.getStackInHand(hand).getItem();
 
-			if (playerEntity.getStackInHand(hand).getItem() != LinkartItems.LINKER_ITEM) {
-				return;
-			}
 			if (LinkartLinkerRegistry.INSTANCE.getByKey(entityA.getType()).stream().noneMatch(item -> item == heldItem)) {
 				return;
 			}
@@ -53,16 +52,13 @@ public class PlayerEntityMixin {
             if (Linkart.SELECTED_ENTITIES.get(playerEntity) == null) {
                 Linkart.SELECTED_ENTITIES.put(playerEntity, (AbstractMinecartEntity) entityA);
 
-                if (playerEntity.world.isClient) {
-                    playerEntity.sendMessage(new TranslatableText(
-                            "text.linkart.message.cart.link_initialize",
-                            literal(x1, Formatting.GREEN),
-                            literal(y1, Formatting.GREEN),
-                            literal(z1, Formatting.GREEN)));
-                }
+                sendToClient(playerEntity, new TranslatableText(
+                        "text.linkart.message.cart.link_initialize",
+                        literal(x1, Formatting.GREEN),
+                        literal(y1, Formatting.GREEN),
+                        literal(z1, Formatting.GREEN)));
 
-                callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                callbackInformationReturnable.cancel();
+                cancel(callbackInformationReturnable);
 
                 return;
             } else {
@@ -71,96 +67,130 @@ public class PlayerEntityMixin {
                 AbstractMinecartEntity entityB = Linkart.SELECTED_ENTITIES.get(playerEntity);
                 AbstractMinecartEntityAccessor accessorB = (AbstractMinecartEntityAccessor) entityB;
 
-                if (entityA == entityB) {
-                    Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+                double x2 = entityB.getX();
+                double y2 = entityB.getY();
+                double z2 = entityB.getZ();
 
-                    if (playerEntity.world.isClient) {
-                        playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_self").formatted(Formatting.RED));
+                if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled() && playerEntity.world.isClient) {
+                    if (accessorA.getNext() == entityB && accessorB.getPrevious() == entityA) {
+                        accessorA.setNext(null);
+                        accessorB.setPrevious(null);
+
+                        ClientSidePacketRegistry.INSTANCE.sendToServer(LinkartNetworks.UNLINK_PACKET, LinkartNetworks.createPacket(entityA, entityB));
+
+                        sendToClient(playerEntity, new TranslatableText(
+                                "text.linkart.message.cart_unlink_success",
+                                literal(x1, Formatting.YELLOW),
+                                literal(y1, Formatting.YELLOW),
+                                literal(z1, Formatting.YELLOW),
+                                literal(x2, Formatting.YELLOW),
+                                literal(y2, Formatting.YELLOW),
+                                literal(z2, Formatting.YELLOW)));
+
+                        cancel(callbackInformationReturnable, playerEntity);
+
+                        return;
+                    } else if (accessorB.getNext() == entityA && accessorA.getPrevious() == entityB) {
+                        accessorB.setNext(null);
+                        accessorA.setPrevious(null);
+
+                        ClientSidePacketRegistry.INSTANCE.sendToServer(LinkartNetworks.UNLINK_PACKET, LinkartNetworks.createPacket(entityB, entityA));
+
+                        sendToClient(playerEntity, new TranslatableText(
+                                "text.linkart.message.cart_unlink_success",
+                                literal(x1, Formatting.YELLOW),
+                                literal(y1, Formatting.YELLOW),
+                                literal(z1, Formatting.YELLOW),
+                                literal(x2, Formatting.YELLOW),
+                                literal(y2, Formatting.YELLOW),
+                                literal(z2, Formatting.YELLOW)));
+
+                        cancel(callbackInformationReturnable, playerEntity);
+
+                        return;
                     }
+                }
 
-                    callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                    callbackInformationReturnable.cancel();
+                if (entityA == entityB) {
+                    sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_self").formatted(Formatting.RED));
+                    cancel(callbackInformationReturnable, playerEntity);
 
                     return;
                 }
 
                 if (accessorB.getPrevious() == entityA || accessorA.getNext() == entityB) {
-                    Linkart.SELECTED_ENTITIES.put(playerEntity, null);
-
-                    if (playerEntity.world.isClient) {
-                        playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_recursion").formatted(Formatting.RED));
-                    }
-
-                    callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                    callbackInformationReturnable.cancel();
+                    sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_recursion").formatted(Formatting.RED));
+                    cancel(callbackInformationReturnable, playerEntity);
 
                     return;
                 }
 
-                double x2 = entityB.getX();
-                double y2 = entityB.getY();
-                double z2 = entityB.getZ();
-
                 int pD = LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance();
 
                 if (entityA.getPos().distanceTo(entityB.getPos()) > pD) {
-                    if (playerEntity.world.isClient) {
-                        playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_chain", literal(pD)).formatted(Formatting.RED));
+                    sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_chain", literal(pD)).formatted(Formatting.RED));
+                    cancel(callbackInformationReturnable, playerEntity);
 
-                        Linkart.SELECTED_ENTITIES.put(playerEntity, null);
-
-                        callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                        callbackInformationReturnable.cancel();
-
-                        return;
-                    }
-
-                    Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+                    return;
                 }
 
                 if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
                     Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == LinkartItems.CHAIN_ITEM).findFirst();
 
                     if (!optionalSlot.isPresent()) {
-                        if (playerEntity.world.isClient) {
-                            playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_chain").formatted(Formatting.RED));
+                        sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_chain").formatted(Formatting.RED));
+                        cancel(callbackInformationReturnable, playerEntity);
 
-                            Linkart.SELECTED_ENTITIES.put(playerEntity, null);
-
-                            callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                            callbackInformationReturnable.cancel();
-
-                            return;
-                        }
+                        return;
                     }
+
+                    // TODO: Decrement here.
                 }
 
                 accessorB.setNext((AbstractMinecartEntity) entityA);
                 ((AbstractMinecartEntityAccessor) accessorB.getNext()).setPrevious(entityB);
 
-                if (playerEntity.world.isClient) {
-                    playerEntity.sendMessage(new TranslatableText(
-                            "text.linkart.message.cart_link_success",
-                            literal(x1, Formatting.GREEN),
-                            literal(y1, Formatting.GREEN),
-                            literal(z1, Formatting.GREEN),
-                            literal(x2, Formatting.GREEN),
-                            literal(y2, Formatting.GREEN),
-                            literal(z2, Formatting.GREEN)));
-                }
+                ClientSidePacketRegistry.INSTANCE.sendToServer(LinkartNetworks.LINK_PACKET, LinkartNetworks.createPacket(entityA, entityB));
 
-                Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+                sendToClient(playerEntity, new TranslatableText(
+                                "text.linkart.message.cart_link_success",
+                                literal(x1, Formatting.GREEN),
+                                literal(y1, Formatting.GREEN),
+                                literal(z1, Formatting.GREEN),
+                                literal(x2, Formatting.GREEN),
+                                literal(y2, Formatting.GREEN),
+                                literal(z2, Formatting.GREEN)));
 
-                PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+                System.out.println("\nCLIENT\n\n" +
+                        "entityA.next = " + accessorA.getNext() + "\n" +
+                        "entityA.previous = " + accessorA.getPrevious() + "\n" +
+                        "entityB.next = " + accessorB.getNext() + "\n" +
+                        "entityB.previous = " + accessorB.getPrevious() + "\n\n"
+                );
 
-                buffer.writeUuid(entityA.getUuid());
-                buffer.writeUuid(entityB.getUuid());
+                cancel(callbackInformationReturnable, playerEntity);
 
-                ClientSidePacketRegistry.INSTANCE.sendToServer(LinkartNetworks.SELECTED_PACKET, buffer);
-
-                callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
-                callbackInformationReturnable.cancel();
+                return;
             }
+        }
+    }
+
+    private static void cancel(CallbackInfoReturnable<ActionResult> callbackInformationReturnable) {
+        callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
+        callbackInformationReturnable.cancel();
+    }
+
+    private static void cancel(CallbackInfoReturnable<ActionResult> callbackInformationReturnable, PlayerEntity playerEntity) {
+        callbackInformationReturnable.setReturnValue(ActionResult.FAIL);
+        callbackInformationReturnable.cancel();
+
+        Linkart.SELECTED_ENTITIES.put(playerEntity, null);
+    }
+
+
+    private static void sendToClient(PlayerEntity playerEntity, Text text) {
+        if (playerEntity.world.isClient) {
+            playerEntity.sendMessage(text);
         }
     }
 }

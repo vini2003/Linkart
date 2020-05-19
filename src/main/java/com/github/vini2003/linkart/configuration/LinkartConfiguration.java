@@ -18,6 +18,9 @@ public class LinkartConfiguration implements ConfigData {
 	@ConfigEntry.Gui.Tooltip
 	public float velocityMultiplier = 0.5f;
 
+	@ConfigEntry.Gui.Tooltip
+	public int collisionDepth = 16;
+
 	public boolean isLinkerEnabled() {
 		return enableLinker;
 	}
@@ -32,5 +35,9 @@ public class LinkartConfiguration implements ConfigData {
 
 	public float getVelocityMultiplier() {
 		return velocityMultiplier;
+	}
+
+	public int getCollisionDepth() {
+		return collisionDepth;
 	}
 }

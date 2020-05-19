@@ -3,12 +3,11 @@ package com.github.vini2003.linkart.utility;
 import com.github.vini2003.linkart.registry.LinkartConfigurations;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import net.minecraft.block.*;
+import net.minecraft.block.enums.RailShape;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
@@ -19,11 +18,13 @@ public class RailUtils {
 		BlockPos entityPosition = next.getBlockPos();
 		BlockPos finalPosition = previous.getBlockPos();
 
-		if (!(next.world.getBlockState(next.getBlockPos()).getBlock() instanceof AbstractRailBlock)) return null;
+		BlockState state = next.world.getBlockState(next.getBlockPos());
 
-		RailPlacementHelper helper = new RailPlacementHelper(next.world, next.getBlockPos(), next.world.getBlockState(next.getBlockPos()));
+		if (!(state.getBlock() instanceof AbstractRailBlock)) return null;
 
-		for (BlockPos initialPosition : helper.getNeighbors()) {
+		List<BlockPos> fuck = (List<BlockPos>) getNeighbors(next.getBlockPos(), state.get(((AbstractRailBlock) state.getBlock()).getShapeProperty()));
+
+		for (BlockPos initialPosition : fuck) {
 			Set<BlockPos> cache = new HashSet<>();
 
 			cache.add(entityPosition);
@@ -43,17 +44,16 @@ public class RailUtils {
 
 		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
-		if (pair == null && entityA.getPos().distanceTo(entityB.getPos()) > maximumDistance) {
-			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
-		} else if (pair == null) {
-			return Vec3d.ZERO;
+		if (pair == null) {
+			return entityA.getVelocity();
 		}
 
 		BlockPos position = pair.getLeft();
 		double distance = pair.getRight().getValue();
 
-		distance += (entityA.getX() - entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX());
-		distance += (entityA.getZ() - entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ());
+		distance += Math.abs((entityA.getX() - (entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX())));
+		distance += Math.abs((entityA.getZ() - (entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ())));
+		distance += Math.abs((entityA.getY() - (entityA.getBlockPos().getY()) - (entityB.getY() - entityB.getBlockPos().getY())));
 
 		Vec3d velocity = Vec3d.ZERO;
 
@@ -83,21 +83,82 @@ public class RailUtils {
 
 		if (!(state.getBlock() instanceof AbstractRailBlock)) return false;
 
-		RailPlacementHelper helper = new RailPlacementHelper(world, currentPosition, state);
-
 		if (distance.getValue() > LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance()) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);
 
-		if (!cache.contains(helper.getNeighbors().get(0))) {
-			distance.getAndIncrement();
-			return step(world, cache, helper.getNeighbors().get(0), finalPosition, distance);
-		} else if (!cache.contains(helper.getNeighbors().get(1))) {
-			distance.getAndIncrement();
-			return step(world, cache, helper.getNeighbors().get(1), finalPosition, distance);
+		List<BlockPos> neighbors = (List<BlockPos>) getNeighbors(currentPosition, state.get(((AbstractRailBlock) state.getBlock()).getShapeProperty()));
+
+		for (BlockPos neighbor : neighbors) {
+			if (!cache.contains(neighbor) && step(world, cache, neighbor, finalPosition, distance)) {
+				distance.increment();
+				return true;
+			}
 		}
 
 		return false;
+	}
+
+	public static Collection<BlockPos> getNeighbors(BlockPos position, RailShape shape) {
+		List<BlockPos> neighbors = new ArrayList<>();
+		switch(shape) {
+			case NORTH_SOUTH:
+				neighbors.add(position.north());
+				neighbors.add(position.south());
+				neighbors.add(position.north().down());
+				neighbors.add(position.south().down());
+				break;
+			case EAST_WEST:
+				neighbors.add(position.west());
+				neighbors.add(position.east());
+				neighbors.add(position.west().down());
+				neighbors.add(position.east().down());
+				break;
+			case ASCENDING_EAST:
+				neighbors.add(position.west().down());
+				neighbors.add(position.west());
+				neighbors.add(position.east().up());
+				break;
+			case ASCENDING_WEST:
+				neighbors.add(position.west().up());
+				neighbors.add(position.east());
+				neighbors.add(position.east().down());
+				break;
+			case ASCENDING_NORTH:
+				neighbors.add(position.north().up());
+				neighbors.add(position.south());
+				neighbors.add(position.south().down());
+				break;
+			case ASCENDING_SOUTH:
+				neighbors.add(position.north().down());
+				neighbors.add(position.north());
+				neighbors.add(position.south().up());
+				break;
+			case SOUTH_EAST:
+				neighbors.add(position.east());
+				neighbors.add(position.south());
+				neighbors.add(position.east().down());
+				neighbors.add(position.south().down());
+				break;
+			case SOUTH_WEST:
+				neighbors.add(position.west());
+				neighbors.add(position.south());
+				neighbors.add(position.west().down());
+				neighbors.add(position.south().down());
+				break;
+			case NORTH_WEST:
+				neighbors.add(position.west());
+				neighbors.add(position.north());
+				neighbors.add(position.west().down());
+				neighbors.add(position.north().down());
+				break;
+			case NORTH_EAST:
+				neighbors.add(position.east());
+				neighbors.add(position.north());
+				neighbors.add(position.east().down());
+				neighbors.add(position.north().down());
+		}
+		return neighbors;
 	}
 }

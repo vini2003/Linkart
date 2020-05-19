@@ -23,12 +23,4 @@ public interface AbstractMinecartEntityAccessor {
     UUID getNextUuid();
 
     void setNextUuid(UUID uuid);
-
-    default boolean hasNext() {
-        return getNext() != null;
-    }
-
-    default boolean hasPrevious() {
-        return getPrevious() != null;
-    }
 }
