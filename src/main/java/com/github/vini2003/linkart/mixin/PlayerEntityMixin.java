@@ -80,12 +80,12 @@ public class PlayerEntityMixin {
 
                         sendToClient(playerEntity, new TranslatableText(
                                 "text.linkart.message.cart_unlink_success",
-                                literal(x1, Formatting.YELLOW),
-                                literal(y1, Formatting.YELLOW),
-                                literal(z1, Formatting.YELLOW),
-                                literal(x2, Formatting.YELLOW),
-                                literal(y2, Formatting.YELLOW),
-                                literal(z2, Formatting.YELLOW)));
+                                literal((int) x1, Formatting.YELLOW),
+                                literal((int) y1, Formatting.YELLOW),
+                                literal((int) z1, Formatting.YELLOW),
+                                literal((int) x2, Formatting.YELLOW),
+                                literal((int) y2, Formatting.YELLOW),
+                                literal((int) z2, Formatting.YELLOW)));
 
                         cancel(callbackInformationReturnable, playerEntity);
 
@@ -98,12 +98,12 @@ public class PlayerEntityMixin {
 
                         sendToClient(playerEntity, new TranslatableText(
                                 "text.linkart.message.cart_unlink_success",
-                                literal(x1, Formatting.YELLOW),
-                                literal(y1, Formatting.YELLOW),
-                                literal(z1, Formatting.YELLOW),
-                                literal(x2, Formatting.YELLOW),
-                                literal(y2, Formatting.YELLOW),
-                                literal(z2, Formatting.YELLOW)));
+                                literal((int) x1, Formatting.YELLOW),
+                                literal((int) y1, Formatting.YELLOW),
+                                literal((int) z1, Formatting.YELLOW),
+                                literal((int) x2, Formatting.YELLOW),
+                                literal((int) y2, Formatting.YELLOW),
+                                literal((int) z2, Formatting.YELLOW)));
 
                         cancel(callbackInformationReturnable, playerEntity);
 
@@ -154,19 +154,12 @@ public class PlayerEntityMixin {
 
                 sendToClient(playerEntity, new TranslatableText(
                                 "text.linkart.message.cart_link_success",
-                                literal(x1, Formatting.GREEN),
-                                literal(y1, Formatting.GREEN),
-                                literal(z1, Formatting.GREEN),
-                                literal(x2, Formatting.GREEN),
-                                literal(y2, Formatting.GREEN),
-                                literal(z2, Formatting.GREEN)));
-
-                System.out.println("\nCLIENT\n\n" +
-                        "entityA.next = " + accessorA.getNext() + "\n" +
-                        "entityA.previous = " + accessorA.getPrevious() + "\n" +
-                        "entityB.next = " + accessorB.getNext() + "\n" +
-                        "entityB.previous = " + accessorB.getPrevious() + "\n\n"
-                );
+                                literal((int) x1, Formatting.GREEN),
+                                literal((int) y1, Formatting.GREEN),
+                                literal((int) z1, Formatting.GREEN),
+                                literal((int) x2, Formatting.GREEN),
+                                literal((int) y2, Formatting.GREEN),
+                                literal((int) z2, Formatting.GREEN)));
 
                 cancel(callbackInformationReturnable, playerEntity);
 

@@ -13,6 +13,9 @@ public class LinkartConfiguration implements ConfigData {
 	public boolean enableChain = true;
 
 	@ConfigEntry.Gui.Tooltip
+	public boolean enableChunkLoading = false;
+
+	@ConfigEntry.Gui.Tooltip
 	public int pathfindingDistance = 8;
 
 	@ConfigEntry.Gui.Tooltip
@@ -27,6 +30,10 @@ public class LinkartConfiguration implements ConfigData {
 
 	public boolean isChainEnabled() {
 		return enableChain;
+	}
+
+	public boolean isChunkLoadingEnabled() {
+		return enableChunkLoading;
 	}
 
 	public int getPathfindingDistance() {

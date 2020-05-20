@@ -44,8 +44,10 @@ public class RailUtils {
 
 		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
-		if (pair == null) {
-			return entityA.getVelocity();
+		if (pair == null && entityA.dimension == entityB.dimension) {
+			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
+		} else if (pair == null) {
+			return entityB.getVelocity();
 		}
 
 		BlockPos position = pair.getLeft();
