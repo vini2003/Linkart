@@ -1,14 +1,18 @@
 package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
+import com.github.vini2003.linkart.registry.LinkartConfigurations;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
+import com.github.vini2003.linkart.registry.LinkartItems;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.ReusableStream;
 import net.minecraft.util.math.Box;
@@ -32,6 +36,12 @@ public abstract class EntityMixin {
     public World world;
 
     @Shadow public abstract Box getBoundingBox();
+
+    @Shadow public abstract double getX();
+
+    @Shadow public abstract double getY();
+
+    @Shadow public abstract double getZ();
 
     @Inject(at = @At("RETURN"), method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;")
     void onToTag(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callbackInformationReturnable) {
@@ -66,8 +76,8 @@ public abstract class EntityMixin {
     }
 
     @Inject(at = @At("HEAD"), method = "remove")
-    void removeLink(CallbackInfo ci) {
-        if ((Object)this instanceof AbstractMinecartEntity) {
+    void removeLink(CallbackInfo callbackInformation) {
+        if ((Object) this instanceof AbstractMinecartEntity) {
             AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) this;
             AbstractMinecartEntityAccessor next = (AbstractMinecartEntityAccessor)accessor.getNext();
             AbstractMinecartEntityAccessor previous = (AbstractMinecartEntityAccessor)accessor.getPrevious();

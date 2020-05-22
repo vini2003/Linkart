@@ -60,6 +60,8 @@ public class RailUtils {
 		Vec3d velocity = Vec3d.ZERO;
 
 		if (distance > maximumDistance) {
+			distance = maximumDistance;
+
 			if (position.getX() > entityA.getBlockPos().getX()) {
 				velocity = new Vec3d(velocity.x + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.y, velocity.z);
 			} else if (position.getX() < entityA.getBlockPos().getX()) {
@@ -85,7 +87,6 @@ public class RailUtils {
 
 		if (!(state.getBlock() instanceof AbstractRailBlock)) return false;
 
-		if (distance.getValue() > LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance()) return false;
 		if (currentPosition.equals(finalPosition)) return true;
 
 		cache.add(currentPosition);
@@ -94,8 +95,12 @@ public class RailUtils {
 
 		for (BlockPos neighbor : neighbors) {
 			if (!cache.contains(neighbor) && step(world, cache, neighbor, finalPosition, distance)) {
-				distance.increment();
-				return true;
+				if (distance.getValue() > LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance()) {
+					return false;
+				} else {
+					distance.increment();
+					return true;
+				}
 			}
 		}
 

@@ -1,37 +1,23 @@
 package com.github.vini2003.linkart.mixin;
 
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
-import com.github.vini2003.linkart.registry.LinkartConfigurations;
-import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.github.vini2003.linkart.utility.RailUtils;
-import net.fabricmc.loader.util.sat4j.core.Vec;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.server.command.ForceLoadCommand;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayDeque;
 import java.util.UUID;
 
 @Mixin(AbstractMinecartEntity.class)
 public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccessor {
-    @Unique
-    ChunkPos chunkPosition = new ChunkPos(0, 0);
-
     @Unique
     UUID nextUuid;
 
@@ -42,7 +28,7 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
     private AbstractMinecartEntity next;
 
     @Unique
-    private UUID previosUuid;
+    private UUID previousUuid;
 
     @Override
     public AbstractMinecartEntity getPrevious() {
@@ -76,12 +62,12 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
 
     @Override
     public UUID getPreviousUuid() {
-        return previosUuid;
+        return previousUuid;
     }
 
     @Override
     public void setPreviousUuid(UUID uuid) {
-        this.previosUuid = uuid;
+        this.previousUuid = uuid;
     }
 
     @Override
@@ -112,17 +98,6 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
                     next.setVelocity(nextVelocity);
                 }
             }
-        }
-
-        if (!chunkPosition.equals(new ChunkPos(next.chunkX, next.chunkZ)) && !mixedWorld.isClient) {
-            ((ServerWorld) mixedWorld).setChunkForced(next.chunkX, next.chunkZ, false);
-            chunkPosition = new ChunkPos(next.chunkX, next.chunkZ);
-        }
-
-
-        if (!mixedWorld.isClient && next.getVelocity().length() != 0.0 && LinkartConfigurations.INSTANCE.getConfig().isChunkLoadingEnabled()) {
-            // TODO: Actually get this working.
-            //((ServerWorld) next.world).setChunkForced(chunkPosition.x, chunkPosition.z, true);
         }
     }
 
