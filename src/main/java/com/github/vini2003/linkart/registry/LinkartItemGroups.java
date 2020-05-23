@@ -7,13 +7,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 
 public class LinkartItemGroups {
-    public static ItemGroup LINKART_GROUP;
+	public static ItemGroup LINKART_GROUP;
 
-    public static void initialize() {
-        if (LinkartConfigurations.INSTANCE.getConfig().isLinkerEnabled()) {
-            LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.LINKER_ITEM));
-        } else if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-            LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.CHAIN_ITEM));
-        }
-    }
+	public static void initialize() {
+		if (LinkartConfigurations.INSTANCE.getConfig().isLinkerEnabled()) {
+			LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.LINKER_ITEM));
+		} else if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
+			LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.CHAIN_ITEM));
+		}
+	}
 }

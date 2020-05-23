@@ -5,19 +5,19 @@ import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import java.util.UUID;
 
 public interface AbstractMinecartEntityAccessor {
-    AbstractMinecartEntity getPrevious();
+	AbstractMinecartEntity getPrevious();
 
-    void setPrevious(AbstractMinecartEntity previous);
+	void setPrevious(AbstractMinecartEntity previous);
 
-    AbstractMinecartEntity getNext();
+	AbstractMinecartEntity getNext();
 
-    void setNext(AbstractMinecartEntity next);
+	void setNext(AbstractMinecartEntity next);
 
-    UUID getPreviousUuid();
+	UUID getPreviousUuid();
 
-    void setPreviousUuid(UUID uuid);
+	void setPreviousUuid(UUID uuid);
 
-    UUID getNextUuid();
+	UUID getNextUuid();
 
-    void setNextUuid(UUID uuid);
+	void setNextUuid(UUID uuid);
 }

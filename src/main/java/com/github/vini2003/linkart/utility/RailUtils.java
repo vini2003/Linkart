@@ -2,7 +2,8 @@ package com.github.vini2003.linkart.utility;
 
 import com.github.vini2003.linkart.registry.LinkartConfigurations;
 import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
-import net.minecraft.block.*;
+import net.minecraft.block.AbstractRailBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.RailShape;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.util.Pair;
@@ -109,7 +110,7 @@ public class RailUtils {
 
 	public static Collection<BlockPos> getNeighbors(BlockPos position, RailShape shape) {
 		List<BlockPos> neighbors = new ArrayList<>();
-		switch(shape) {
+		switch (shape) {
 			case NORTH_SOUTH:
 				neighbors.add(position.north());
 				neighbors.add(position.south());

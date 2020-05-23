@@ -18,93 +18,93 @@ import java.util.UUID;
 
 @Mixin(AbstractMinecartEntity.class)
 public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEntityAccessor {
-    @Unique
-    UUID nextUuid;
+	@Unique
+	UUID nextUuid;
 
-    @Unique
-    private AbstractMinecartEntity previous;
+	@Unique
+	private AbstractMinecartEntity previous;
 
-    @Unique
-    private AbstractMinecartEntity next;
+	@Unique
+	private AbstractMinecartEntity next;
 
-    @Unique
-    private UUID previousUuid;
+	@Unique
+	private UUID previousUuid;
 
-    @Override
-    public AbstractMinecartEntity getPrevious() {
-        if (previous == null && getPreviousUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
-            previous = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getPreviousUuid());
-        }
+	@Override
+	public AbstractMinecartEntity getPrevious() {
+		if (previous == null && getPreviousUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
+			previous = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getPreviousUuid());
+		}
 
-        return previous;
-    }
+		return previous;
+	}
 
-    @Override
-    public void setPrevious(AbstractMinecartEntity previous) {
-        this.previous = previous;
-        this.nextUuid = previous == null ? null : previous.getUuid();
-    }
+	@Override
+	public void setPrevious(AbstractMinecartEntity previous) {
+		this.previous = previous;
+		this.nextUuid = previous == null ? null : previous.getUuid();
+	}
 
-    @Override
-    public AbstractMinecartEntity getNext() {
-        if (next == null && getNextUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
-            next = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getNextUuid());
-        }
+	@Override
+	public AbstractMinecartEntity getNext() {
+		if (next == null && getNextUuid() != null && !((AbstractMinecartEntity) (Object) this).world.isClient) {
+			next = (AbstractMinecartEntity) ((ServerWorld) ((AbstractMinecartEntity) (Object) this).world).getEntity(getNextUuid());
+		}
 
-        return next;
-    }
+		return next;
+	}
 
-    @Override
-    public void setNext(AbstractMinecartEntity next) {
-        this.next = next;
-        this.nextUuid = next == null ? null : next.getUuid();
-    }
+	@Override
+	public void setNext(AbstractMinecartEntity next) {
+		this.next = next;
+		this.nextUuid = next == null ? null : next.getUuid();
+	}
 
-    @Override
-    public UUID getPreviousUuid() {
-        return previousUuid;
-    }
+	@Override
+	public UUID getPreviousUuid() {
+		return previousUuid;
+	}
 
-    @Override
-    public void setPreviousUuid(UUID uuid) {
-        this.previousUuid = uuid;
-    }
+	@Override
+	public void setPreviousUuid(UUID uuid) {
+		this.previousUuid = uuid;
+	}
 
-    @Override
-    public UUID getNextUuid() {
-        return nextUuid;
-    }
+	@Override
+	public UUID getNextUuid() {
+		return nextUuid;
+	}
 
-    @Override
-    public void setNextUuid(UUID uuid) {
-        this.nextUuid = uuid;
-    }
+	@Override
+	public void setNextUuid(UUID uuid) {
+		this.nextUuid = uuid;
+	}
 
-    @Inject(at = @At("HEAD"), method = "tick()V")
-    void onTick(CallbackInfo callbackInformation) {
-        World mixedWorld = ((AbstractMinecartEntity) (Object) this).world;
+	@Inject(at = @At("HEAD"), method = "tick()V")
+	void onTick(CallbackInfo callbackInformation) {
+		World mixedWorld = ((AbstractMinecartEntity) (Object) this).world;
 
-        AbstractMinecartEntity next = (AbstractMinecartEntity) (Object) this;
-        AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) next;
+		AbstractMinecartEntity next = (AbstractMinecartEntity) (Object) this;
+		AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) next;
 
-        if (!mixedWorld.isClient) {
+		if (!mixedWorld.isClient) {
 
-            if (accessor.getPrevious() != null) {
-                AbstractMinecartEntity previous = accessor.getPrevious();
+			if (accessor.getPrevious() != null) {
+				AbstractMinecartEntity previous = accessor.getPrevious();
 
-                Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
+				Vec3d nextVelocity = RailUtils.getNextVelocity(next, previous);
 
-                if (nextVelocity != null) {
-                    next.setVelocity(nextVelocity);
-                }
-            }
-        }
-    }
+				if (nextVelocity != null) {
+					next.setVelocity(nextVelocity);
+				}
+			}
+		}
+	}
 
-    @Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)
-    void onPushAway(Entity entity, CallbackInfo callbackInformation) {
-        if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity)) {
-            callbackInformation.cancel();
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)
+	void onPushAway(Entity entity, CallbackInfo callbackInformation) {
+		if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity)) {
+			callbackInformation.cancel();
+		}
+	}
 }
