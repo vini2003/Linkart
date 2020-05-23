@@ -2,7 +2,6 @@ package com.github.vini2003.linkart;
 
 import com.github.vini2003.linkart.registry.*;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.render.entity.MinecartEntityRenderer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 
