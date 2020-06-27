@@ -5,6 +5,7 @@ import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.RailShape;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
@@ -16,6 +17,23 @@ import java.util.*;
 
 public class RailUtils {
 	public static Pair<BlockPos, MutableDouble> getNextRail(AbstractMinecartEntity next, AbstractMinecartEntity previous) {
+		Optional.ofNullable(next.getPassengerList().size() >= 1 ? next.getPassengerList().get(0) : null).ifPresent(entity -> {
+			entity.yaw = next.yaw;
+			entity.pitch = next.pitch;
+
+			entity.prevYaw = next.yaw;
+			entity.prevPitch = next.pitch;
+		});
+
+		Optional.ofNullable(previous.getPassengerList().size() >= 1 ? previous.getPassengerList().get(0) : null).ifPresent(entity -> {
+			entity.yaw = previous.yaw;
+			entity.pitch = previous.pitch;
+
+			entity.prevYaw = previous.yaw;
+			entity.prevPitch = previous.pitch;
+		});
+
+
 		BlockPos entityPosition = next.getBlockPos();
 		BlockPos finalPosition = previous.getBlockPos();
 
@@ -45,7 +63,7 @@ public class RailUtils {
 
 		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
-		if (pair == null && entityA.dimension == entityB.dimension) {
+		if (pair == null && entityA.world.getDimensionRegistryKey() == entityB.world.getDimensionRegistryKey()) {
 			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
 		} else if (pair == null) {
 			return entityB.getVelocity();

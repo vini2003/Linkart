@@ -3,7 +3,11 @@ package com.github.vini2003.linkart.mixin;
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import com.github.vini2003.linkart.utility.CollisionUtils;
 import com.github.vini2003.linkart.utility.RailUtils;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -81,7 +85,7 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
 	}
 
 	@Inject(at = @At("HEAD"), method = "tick()V")
-	void onTick(CallbackInfo callbackInformation) {
+	void onTickCommon(CallbackInfo callbackInformation) {
 		World mixedWorld = ((AbstractMinecartEntity) (Object) this).world;
 
 		AbstractMinecartEntity next = (AbstractMinecartEntity) (Object) this;
@@ -99,6 +103,19 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
 				}
 			}
 		}
+	}
+
+	@Environment(EnvType.CLIENT)
+	@Inject(at = @At("HEAD"), method = "tick()V")
+	void onTickClient(CallbackInfo callbackInformation) {
+		AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
+
+		entity.getPassengerList().stream().filter(passenger -> passenger instanceof PlayerEntity).forEach(player -> {
+			player.yaw = entity.yaw + 90 * 0.75f;
+			player.pitch = entity.pitch;
+			player.prevYaw = entity.prevYaw + 90 * 0.75f;
+			player.prevPitch = entity.prevPitch;
+		});
 	}
 
 	@Inject(at = @At("HEAD"), method = "pushAwayFrom(Lnet/minecraft/entity/Entity;)V", cancellable = true)

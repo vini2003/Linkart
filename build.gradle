@@ -6,8 +6,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-archivesBaseName = project.mod_archive_base_name
-version = project.mod_version
+archivesBaseName = project.mod_name + "-" + project.mod_version + "+" + project.version_meta
 group = project.mod_group
 
 repositories() {
@@ -26,7 +25,7 @@ repositories() {
 
 dependencies {
 	// Minecraft
-	minecraft "tcom.mojang:minecraft:${minecraft_version}"
+	minecraft "com.mojang:minecraft:${minecraft_version}"
 
 	// Yarn
 	mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
