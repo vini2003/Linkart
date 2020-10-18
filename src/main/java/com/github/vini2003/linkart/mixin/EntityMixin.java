@@ -86,7 +86,7 @@ public abstract class EntityMixin {
 
 	@Inject(at = @At("HEAD"), method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", cancellable = true)
 	void onRecalculateVelocity(Vec3d movement, CallbackInfoReturnable<Vec3d> callbackInformationReturnable) {
-		List<Entity> collisions = this.world.getEntities((Entity) (Object) this, getBoundingBox().stretch(movement));
+		List<Entity> collisions = this.world.getOtherEntities((Entity) (Object) this, getBoundingBox().stretch(movement));
 
 		for (Entity entity : collisions) {
 			if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity) && world.getBlockState(((AbstractMinecartEntity) (Object) this).getBlockPos()).getBlock() instanceof AbstractRailBlock) {

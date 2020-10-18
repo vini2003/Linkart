@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.2.7-SNAPSHOT'
+	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -46,7 +46,7 @@ dependencies {
 	modImplementation "io.github.prospector:modmenu:${modmenu_version}"
 
 	// LibCD
-	modImplementation "io.github.cottonmc:LibCD:${libcd_version}"
+	// modImplementation "io.github.cottonmc:LibCD:${libcd_version}"
 }
 
 processResources {

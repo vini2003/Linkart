@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.Slot;
@@ -42,7 +43,7 @@ public class LinkartNetworks {
 				PlayerScreenHandler playerContainer = playerEntity.playerScreenHandler;
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == LinkartItems.CHAIN_ITEM).findFirst();
+					Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == Items.CHAIN).findFirst();
 
 					if (!optionalSlot.isPresent()) {
 						playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_desynchronization").formatted(Formatting.RED), true);
@@ -82,7 +83,7 @@ public class LinkartNetworks {
 				PlayerEntity playerEntity = context.getPlayer();
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					ItemScatterer.spawn(playerEntity.world, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), new ItemStack(LinkartItems.CHAIN_ITEM));
+					ItemScatterer.spawn(playerEntity.world, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), new ItemStack(Items.CHAIN));
 				}
 			});
 		}));

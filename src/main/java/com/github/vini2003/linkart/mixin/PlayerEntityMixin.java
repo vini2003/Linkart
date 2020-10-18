@@ -13,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
@@ -131,7 +132,7 @@ public abstract class PlayerEntityMixin {
 				}
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					Optional<Slot> optionalSlot = playerScreenHandler.slots.stream().filter(slot -> slot.getStack().getItem() == LinkartItems.CHAIN_ITEM).findFirst();
+					Optional<Slot> optionalSlot = playerScreenHandler.slots.stream().filter(slot -> slot.getStack().getItem() == Items.CHAIN).findFirst();
 
 					if (!optionalSlot.isPresent()) {
 						sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_chain").formatted(Formatting.RED));

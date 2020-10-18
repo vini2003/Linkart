@@ -63,7 +63,7 @@ public class RailUtils {
 
 		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
 
-		if (pair == null && entityA.world.getDimensionRegistryKey() == entityB.world.getDimensionRegistryKey()) {
+		if (pair == null && entityA.world.getRegistryKey() == entityB.world.getRegistryKey()) {
 			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
 		} else if (pair == null) {
 			return entityB.getVelocity();
