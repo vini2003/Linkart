@@ -37,7 +37,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${api_version}"
 
 	// ClotConfig
-	modApi "me.shedaniel.cloth:config-2:${clothconfig_version}"
+	// modApi "me.shedaniel.cloth:config-2:${clothconfig_version}"
 
 	// AutoConfig
 	modApi "me.sargunvohra.mcmods:autoconfig1u:${autoconfig_version}"
