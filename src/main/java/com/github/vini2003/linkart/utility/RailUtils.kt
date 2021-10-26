@@ -1,190 +1,231 @@
-package com.github.vini2003.linkart.utility;
+package com.github.vini2003.linkart.utility
 
-import com.github.vini2003.linkart.registry.LinkartConfigurations;
-import com.github.vini2003.linkart.registry.LinkartDistanceRegistry;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import org.apache.commons.lang3.mutable.MutableDouble;
+import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor
+import com.github.vini2003.linkart.registry.LinkartConfigurations
+import com.github.vini2003.linkart.registry.LinkartDistanceRegistry
+import net.minecraft.block.AbstractRailBlock
+import net.minecraft.block.enums.RailShape
+import net.minecraft.entity.Entity
+import net.minecraft.entity.vehicle.AbstractMinecartEntity
+import net.minecraft.entity.vehicle.FurnaceMinecartEntity
+import net.minecraft.util.Pair
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
+import net.minecraft.world.World
+import org.apache.commons.lang3.mutable.MutableDouble
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+import java.util.*
 
-import java.util.*;
+object RailUtils {
 
-public class RailUtils {
-	public static Pair<BlockPos, MutableDouble> getNextRail(AbstractMinecartEntity next, AbstractMinecartEntity previous) {
-		Optional.ofNullable(next.getPassengerList().size() >= 1 ? next.getPassengerList().get(0) : null).ifPresent(entity -> {
-			entity.setYaw (next.getYaw());
-			entity.setPitch(next.getPitch());
+    fun getNextRail(next: AbstractMinecartEntity, previous: AbstractMinecartEntity): Pair<BlockPos, MutableDouble>? {
+        Optional.ofNullable(if (next.passengerList.size >= 1) next.passengerList[0] else null)
+            .ifPresent { entity: Entity ->
+                entity.yaw = next.yaw
+                entity.pitch = next.pitch
+                entity.prevYaw = next.yaw
+                entity.prevPitch = next.pitch
+            }
+        Optional.ofNullable(if (previous.passengerList.size >= 1) previous.passengerList[0] else null)
+            .ifPresent { entity: Entity ->
+                entity.yaw = previous.yaw
+                entity.pitch = previous.pitch
+                entity.prevYaw = previous.yaw
+                entity.prevPitch = previous.pitch
+            }
+        val entityPosition = next.blockPos
+        val finalPosition = previous.blockPos
+        val state = next.world.getBlockState(next.blockPos)
+        if (state.block !is AbstractRailBlock) return null
+        val fuck =
+            getNeighbors(next.blockPos, state.get((state.block as AbstractRailBlock).shapeProperty)) as List<BlockPos>
+        for (initialPosition in fuck) {
+            val cache: MutableSet<BlockPos> = HashSet()
+            cache.add(entityPosition)
+            val distance = MutableDouble(0)
+            if (step(next.world, cache, initialPosition, finalPosition, distance)) {
+                return Pair(initialPosition, distance)
+            }
+        }
+        return null
+    }
 
-			entity.prevYaw = next.getYaw();
-			entity.prevPitch = next.getPitch();
-		});
+    fun getNextVelocity(entityA: AbstractMinecartEntity, entityB: AbstractMinecartEntity): Vec3d {
+        val pair = getNextRail(entityA, entityB)
+        val maximumDistance = Math.max(
+            LinkartDistanceRegistry.INSTANCE.getByKey(entityA.type),
+            LinkartDistanceRegistry.INSTANCE.getByKey(entityB.type)
+        )
+        if (pair == null && entityA.world.registryKey === entityB.world.registryKey) {
+            return Vec3d(entityB.x - entityA.x, entityB.y - entityA.y, entityB.z - entityA.z)
+        } else if (pair == null) {
+            return entityB.velocity
+        }
+        val position = pair.left
+        var distance = pair.right.value
+        distance += Math.abs(entityA.x - entityA.blockPos.x - (entityB.x - entityB.blockPos.x))
+        distance += Math.abs(entityA.z - entityA.blockPos.z - (entityB.z - entityB.blockPos.z))
+        distance += Math.abs(entityA.y - entityA.blockPos.y - (entityB.y - entityB.blockPos.y))
+        var velocity = Vec3d.ZERO
+        if (distance > maximumDistance) {
+            distance = maximumDistance
+            if (position.x > entityA.blockPos.x) {
+                velocity = Vec3d(
+                    velocity.x + LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance,
+                    velocity.y,
+                    velocity.z
+                )
+            } else if (position.x < entityA.blockPos.x) {
+                velocity = Vec3d(
+                    velocity.x - LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance,
+                    velocity.y,
+                    velocity.z
+                )
+            }
+            if (position.y > entityA.blockPos.y) {
+                velocity = Vec3d(
+                    velocity.x,
+                    velocity.y - LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance,
+                    velocity.z
+                )
+            } else if (position.y < entityA.blockPos.y) {
+                velocity = Vec3d(
+                    velocity.x,
+                    velocity.y + LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance,
+                    velocity.z
+                )
+            }
+            if (position.z > entityA.blockPos.z) {
+                velocity = Vec3d(
+                    velocity.x,
+                    velocity.y,
+                    velocity.z + LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance
+                )
+            } else if (position.z < entityA.blockPos.z) {
+                velocity = Vec3d(
+                    velocity.x,
+                    velocity.y,
+                    velocity.z - LinkartConfigurations.INSTANCE.config.getVelocityMultiplier() * distance
+                )
+            }
+        }
+        return velocity
+    }
 
-		Optional.ofNullable(previous.getPassengerList().size() >= 1 ? previous.getPassengerList().get(0) : null).ifPresent(entity -> {
-			entity.setYaw (previous.getYaw());
-			entity.setPitch(previous.getPitch());
+    fun step(
+        world: World,
+        cache: MutableSet<BlockPos>,
+        currentPosition: BlockPos,
+        finalPosition: BlockPos,
+        distance: MutableDouble
+    ): Boolean {
+        val state = world.getBlockState(currentPosition)
+        if (state.block !is AbstractRailBlock) return false
+        if (currentPosition == finalPosition) return true
+        cache.add(currentPosition)
+        val neighbors =
+            getNeighbors(currentPosition, state.get((state.block as AbstractRailBlock).shapeProperty)) as List<BlockPos>
+        for (neighbor in neighbors) {
+            if (!cache.contains(neighbor) && step(world, cache, neighbor, finalPosition, distance)) {
+                return if (distance.value > LinkartConfigurations.INSTANCE.config.getPathfindingDistance()) {
+                    false
+                } else {
+                    distance.increment()
+                    true
+                }
+            }
+        }
+        return false
+    }
 
-			entity.prevYaw = previous.getYaw();
-			entity.prevPitch = previous.getPitch();
-		});
+    fun getNeighbors(position: BlockPos, shape: RailShape?): Collection<BlockPos> {
+        val neighbors: MutableList<BlockPos> = ArrayList()
+        when (shape) {
+            RailShape.NORTH_SOUTH -> {
+                neighbors.add(position.north())
+                neighbors.add(position.south())
+                neighbors.add(position.north().down())
+                neighbors.add(position.south().down())
+            }
+            RailShape.EAST_WEST -> {
+                neighbors.add(position.west())
+                neighbors.add(position.east())
+                neighbors.add(position.west().down())
+                neighbors.add(position.east().down())
+            }
+            RailShape.ASCENDING_EAST -> {
+                neighbors.add(position.west().down())
+                neighbors.add(position.west())
+                neighbors.add(position.east().up())
+            }
+            RailShape.ASCENDING_WEST -> {
+                neighbors.add(position.west().up())
+                neighbors.add(position.east())
+                neighbors.add(position.east().down())
+            }
+            RailShape.ASCENDING_NORTH -> {
+                neighbors.add(position.north().up())
+                neighbors.add(position.south())
+                neighbors.add(position.south().down())
+            }
+            RailShape.ASCENDING_SOUTH -> {
+                neighbors.add(position.north().down())
+                neighbors.add(position.north())
+                neighbors.add(position.south().up())
+            }
+            RailShape.SOUTH_EAST -> {
+                neighbors.add(position.east())
+                neighbors.add(position.south())
+                neighbors.add(position.east().down())
+                neighbors.add(position.south().down())
+            }
+            RailShape.SOUTH_WEST -> {
+                neighbors.add(position.west())
+                neighbors.add(position.south())
+                neighbors.add(position.west().down())
+                neighbors.add(position.south().down())
+            }
+            RailShape.NORTH_WEST -> {
+                neighbors.add(position.west())
+                neighbors.add(position.north())
+                neighbors.add(position.west().down())
+                neighbors.add(position.north().down())
+            }
+            RailShape.NORTH_EAST -> {
+                neighbors.add(position.east())
+                neighbors.add(position.north())
+                neighbors.add(position.east().down())
+                neighbors.add(position.north().down())
+            }
+        }
+        return neighbors
+    }
+
+    fun adjustVelocities(next: AbstractMinecartEntity, previous: AbstractMinecartEntity) {
 
 
-		BlockPos entityPosition = next.getBlockPos();
-		BlockPos finalPosition = previous.getBlockPos();
+        var entityA: AbstractMinecartEntity = next
+        var entityB: AbstractMinecartEntity = previous
 
-		BlockState state = next.world.getBlockState(next.getBlockPos());
+        if (entityA is FurnaceMinecartEntity) {
+            val temp = entityB
+            entityB = entityA
+            entityA = temp
+        }
 
-		if (!(state.getBlock() instanceof AbstractRailBlock)) return null;
+        val nextVelocity = RailUtils.getNextVelocity(entityA, entityB)
+        entityA.velocity = nextVelocity
+    }
 
-		List<BlockPos> fuck = (List<BlockPos>) getNeighbors(next.getBlockPos(), state.get(((AbstractRailBlock) state.getBlock()).getShapeProperty()));
-
-		for (BlockPos initialPosition : fuck) {
-			Set<BlockPos> cache = new HashSet<>();
-
-			cache.add(entityPosition);
-
-			MutableDouble distance = new MutableDouble(0);
-
-			if (step(next.world, cache, initialPosition, finalPosition, distance)) {
-				return new Pair<>(initialPosition, distance);
-			}
-		}
-
-		return null;
-	}
-
-	public static Vec3d getNextVelocity(AbstractMinecartEntity entityA, AbstractMinecartEntity entityB) {
-		Pair<BlockPos, MutableDouble> pair = getNextRail(entityA, entityB);
-
-		double maximumDistance = Math.max(LinkartDistanceRegistry.INSTANCE.getByKey(entityA.getType()), LinkartDistanceRegistry.INSTANCE.getByKey(entityB.getType()));
-
-		if (pair == null && entityA.world.getRegistryKey() == entityB.world.getRegistryKey()) {
-			return new Vec3d(entityB.getX() - entityA.getX(), entityB.getY() - entityA.getY(), entityB.getZ() - entityA.getZ());
-		} else if (pair == null) {
-			return entityB.getVelocity();
-		}
-
-		BlockPos position = pair.getLeft();
-		double distance = pair.getRight().getValue();
-
-		distance += Math.abs((entityA.getX() - (entityA.getBlockPos().getX()) - (entityB.getX() - entityB.getBlockPos().getX())));
-		distance += Math.abs((entityA.getZ() - (entityA.getBlockPos().getZ()) - (entityB.getZ() - entityB.getBlockPos().getZ())));
-		distance += Math.abs((entityA.getY() - (entityA.getBlockPos().getY()) - (entityB.getY() - entityB.getBlockPos().getY())));
-
-		Vec3d velocity = Vec3d.ZERO;
-
-		if (distance > maximumDistance) {
-			distance = maximumDistance;
-
-			if (position.getX() > entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.y, velocity.z);
-			} else if (position.getX() < entityA.getBlockPos().getX()) {
-				velocity = new Vec3d(velocity.x - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.y, velocity.z);
-			}
-			if (position.getY() > entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.z);
-			} else if (position.getY() < entityA.getBlockPos().getY()) {
-				velocity = new Vec3d(velocity.x, velocity.y + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance, velocity.z);
-			}
-			if (position.getZ() > entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z + LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance);
-			} else if (position.getZ() < entityA.getBlockPos().getZ()) {
-				velocity = new Vec3d(velocity.x, velocity.y, velocity.z - LinkartConfigurations.INSTANCE.getConfig().getVelocityMultiplier() * distance);
-			}
-		}
-
-		return velocity;
-	}
-
-	public static boolean step(World world, Set<BlockPos> cache, BlockPos currentPosition, BlockPos finalPosition, MutableDouble distance) {
-		BlockState state = world.getBlockState(currentPosition);
-
-		if (!(state.getBlock() instanceof AbstractRailBlock)) return false;
-
-		if (currentPosition.equals(finalPosition)) return true;
-
-		cache.add(currentPosition);
-
-		List<BlockPos> neighbors = (List<BlockPos>) getNeighbors(currentPosition, state.get(((AbstractRailBlock) state.getBlock()).getShapeProperty()));
-
-		for (BlockPos neighbor : neighbors) {
-			if (!cache.contains(neighbor) && step(world, cache, neighbor, finalPosition, distance)) {
-				if (distance.getValue() > LinkartConfigurations.INSTANCE.getConfig().getPathfindingDistance()) {
-					return false;
-				} else {
-					distance.increment();
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	public static Collection<BlockPos> getNeighbors(BlockPos position, RailShape shape) {
-		List<BlockPos> neighbors = new ArrayList<>();
-		switch (shape) {
-			case NORTH_SOUTH:
-				neighbors.add(position.north());
-				neighbors.add(position.south());
-				neighbors.add(position.north().down());
-				neighbors.add(position.south().down());
-				break;
-			case EAST_WEST:
-				neighbors.add(position.west());
-				neighbors.add(position.east());
-				neighbors.add(position.west().down());
-				neighbors.add(position.east().down());
-				break;
-			case ASCENDING_EAST:
-				neighbors.add(position.west().down());
-				neighbors.add(position.west());
-				neighbors.add(position.east().up());
-				break;
-			case ASCENDING_WEST:
-				neighbors.add(position.west().up());
-				neighbors.add(position.east());
-				neighbors.add(position.east().down());
-				break;
-			case ASCENDING_NORTH:
-				neighbors.add(position.north().up());
-				neighbors.add(position.south());
-				neighbors.add(position.south().down());
-				break;
-			case ASCENDING_SOUTH:
-				neighbors.add(position.north().down());
-				neighbors.add(position.north());
-				neighbors.add(position.south().up());
-				break;
-			case SOUTH_EAST:
-				neighbors.add(position.east());
-				neighbors.add(position.south());
-				neighbors.add(position.east().down());
-				neighbors.add(position.south().down());
-				break;
-			case SOUTH_WEST:
-				neighbors.add(position.west());
-				neighbors.add(position.south());
-				neighbors.add(position.west().down());
-				neighbors.add(position.south().down());
-				break;
-			case NORTH_WEST:
-				neighbors.add(position.west());
-				neighbors.add(position.north());
-				neighbors.add(position.west().down());
-				neighbors.add(position.north().down());
-				break;
-			case NORTH_EAST:
-				neighbors.add(position.east());
-				neighbors.add(position.north());
-				neighbors.add(position.east().down());
-				neighbors.add(position.north().down());
-		}
-		return neighbors;
-	}
+    fun handleTickCommon(entityMixin: AbstractMinecartEntity?, callbackInformation: CallbackInfo?) {
+        val mixedWorld = (entityMixin as? AbstractMinecartEntity)?.world ?: return
+        val next = (entityMixin as? AbstractMinecartEntity) ?: return
+        val accessor = (next as? AbstractMinecartEntityAccessor) ?: return
+        if (!mixedWorld.isClient) {
+            if (accessor.previous != null) {
+                val previous = accessor.previous
+                RailUtils.adjustVelocities(next, previous)
+            }
+        }
+    }
 }
