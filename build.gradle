@@ -1,10 +1,16 @@
 plugins {
-	id 'fabric-loom' version '0.5-SNAPSHOT'
+	id 'java-library'
+	id "org.jetbrains.kotlin.jvm"
+	id 'fabric-loom' version '0.9-SNAPSHOT'
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(16)
+	}
+}
+
 
 archivesBaseName = project.mod_name + "-" + project.mod_version + "+" + project.version_meta
 group = project.mod_group
@@ -13,7 +19,8 @@ repositories() {
 	// modmuss50
 	maven {
 		name = "modmuss50"
-		url = "https://maven.fabricmc.net/io/github/prospector/modmenu/"
+//		url = "https://maven.fabricmc.net/io/github/prospector/modmenu/"
+		url = "https://maven.terraformersmc.com/releases/"
 	}
 
 	// Cotton
@@ -21,6 +28,7 @@ repositories() {
 		name = "Cotton"
 		url = "https://server.bbkr.space/artifactory/libs-release/"
 	}
+	maven { url "https://maven.shedaniel.me/" }
 }
 
 dependencies {
@@ -40,25 +48,24 @@ dependencies {
 	// modApi "me.shedaniel.cloth:config-2:${clothconfig_version}"
 
 	// AutoConfig
-	modApi "me.sargunvohra.mcmods:autoconfig1u:${autoconfig_version}"
+	// https://mvnrepository.com/artifact/me.sargunvohra.mcmods/autoconfig1u
+	modImplementation group: "me.sargunvohra.mcmods", name: 'autoconfig1u', version: '3.3.1'
+
+
+	//"me.sargunvohra.mcmods:autoconfig1u:${autoconfig_version}"
 
 	// ModMenu
-	modImplementation "io.github.prospector:modmenu:${modmenu_version}"
+	modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
 
 	// LibCD
 	// modImplementation "io.github.cottonmc:LibCD:${libcd_version}"
 }
 
 processResources {
-	inputs.property "version", project.version
+	inputs.property "version", project.version.toString()
 
-	from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
-		expand "version": project.version
-	}
-
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version.toString()
 	}
 }
 
@@ -91,3 +98,5 @@ publishing {
 		mavenLocal()
 	}
 }
+
+compileKotlin.kotlinOptions.jvmTarget = "16"

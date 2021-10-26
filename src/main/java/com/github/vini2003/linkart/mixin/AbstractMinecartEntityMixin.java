@@ -111,8 +111,8 @@ public abstract class AbstractMinecartEntityMixin implements AbstractMinecartEnt
 		AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
 
 		entity.getPassengerList().stream().filter(passenger -> passenger instanceof PlayerEntity).forEach(player -> {
-			player.yaw = entity.yaw + 90 * 0.75f;
-			player.pitch = entity.pitch;
+			entity.setYaw ( entity.getYaw() + 90 * 0.75f);
+			player.setPitch(entity.getPitch());
 			player.prevYaw = entity.prevYaw + 90 * 0.75f;
 			player.prevPitch = entity.prevPitch;
 		});

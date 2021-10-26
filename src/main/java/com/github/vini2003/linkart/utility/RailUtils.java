@@ -18,19 +18,19 @@ import java.util.*;
 public class RailUtils {
 	public static Pair<BlockPos, MutableDouble> getNextRail(AbstractMinecartEntity next, AbstractMinecartEntity previous) {
 		Optional.ofNullable(next.getPassengerList().size() >= 1 ? next.getPassengerList().get(0) : null).ifPresent(entity -> {
-			entity.yaw = next.yaw;
-			entity.pitch = next.pitch;
+			entity.setYaw (next.getYaw());
+			entity.setPitch(next.getPitch());
 
-			entity.prevYaw = next.yaw;
-			entity.prevPitch = next.pitch;
+			entity.prevYaw = next.getYaw();
+			entity.prevPitch = next.getPitch();
 		});
 
 		Optional.ofNullable(previous.getPassengerList().size() >= 1 ? previous.getPassengerList().get(0) : null).ifPresent(entity -> {
-			entity.yaw = previous.yaw;
-			entity.pitch = previous.pitch;
+			entity.setYaw (previous.getYaw());
+			entity.setPitch(previous.getPitch());
 
-			entity.prevYaw = previous.yaw;
-			entity.prevPitch = previous.pitch;
+			entity.prevYaw = previous.getYaw();
+			entity.prevPitch = previous.getPitch();
 		});
 
 
