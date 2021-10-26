@@ -6,13 +6,16 @@ import com.github.vini2003.linkart.registry.LinkartConfigurations;
 import com.github.vini2003.linkart.registry.LinkartItems;
 import com.github.vini2003.linkart.registry.LinkartLinkerRegistry;
 import com.github.vini2003.linkart.registry.LinkartNetworks;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.minecraft.container.PlayerContainer;
-import net.minecraft.container.Slot;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
@@ -23,6 +26,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -30,10 +34,11 @@ import java.util.Optional;
 import static com.github.vini2003.linkart.utility.TextUtils.literal;
 
 @Mixin(PlayerEntity.class)
-public class PlayerEntityMixin {
-	@Shadow
+public abstract class PlayerEntityMixin {
 	@Final
-	public PlayerContainer playerContainer;
+	public PlayerScreenHandler playerScreenHandler;
+
+	@Shadow protected abstract boolean shouldDismount();
 
 	@Inject(at = @At("HEAD"), method = "interact(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", cancellable = true)
 	void onInteract(Entity entityA, Hand hand, CallbackInfoReturnable<ActionResult> callbackInformationReturnable) {
@@ -127,7 +132,7 @@ public class PlayerEntityMixin {
 				}
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == LinkartItems.CHAIN_ITEM).findFirst();
+					Optional<Slot> optionalSlot = playerScreenHandler.slots.stream().filter(slot -> slot.getStack().getItem() == Items.CHAIN).findFirst();
 
 					if (!optionalSlot.isPresent()) {
 						sendToClient(playerEntity, new TranslatableText("text.linkart.message.cart_link_failure_chain").formatted(Formatting.RED));
@@ -172,7 +177,7 @@ public class PlayerEntityMixin {
 
 	private static void sendToClient(PlayerEntity playerEntity, Text text) {
 		if (playerEntity.world.isClient) {
-			playerEntity.sendMessage(text);
+			playerEntity.sendMessage(text, true);
 		}
 	}
 }

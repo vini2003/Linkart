@@ -5,7 +5,7 @@ import com.github.vini2003.linkart.utility.CollisionUtils;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -35,8 +35,8 @@ public abstract class EntityMixin {
 	@Shadow
 	public abstract double getZ();
 
-	@Inject(at = @At("RETURN"), method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;")
-	void onToTag(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callbackInformationReturnable) {
+	@Inject(at = @At("RETURN"), method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;")
+	void onToTag(NbtCompound tag, CallbackInfoReturnable<NbtCompound> callbackInformationReturnable) {
 		if ((Object) this instanceof AbstractMinecartEntity) {
 			AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
 			AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) entity;
@@ -51,8 +51,8 @@ public abstract class EntityMixin {
 		}
 	}
 
-	@Inject(at = @At("RETURN"), method = "fromTag(Lnet/minecraft/nbt/CompoundTag;)V")
-	void onFromTag(CompoundTag tag, CallbackInfo callbackInformation) {
+	@Inject(at = @At("RETURN"), method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+	void onFromTag(NbtCompound tag, CallbackInfo callbackInformation) {
 		if ((Object) this instanceof AbstractMinecartEntity) {
 			AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
 			AbstractMinecartEntityAccessor accessor = (AbstractMinecartEntityAccessor) entity;
@@ -86,7 +86,7 @@ public abstract class EntityMixin {
 
 	@Inject(at = @At("HEAD"), method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", cancellable = true)
 	void onRecalculateVelocity(Vec3d movement, CallbackInfoReturnable<Vec3d> callbackInformationReturnable) {
-		List<Entity> collisions = this.world.getEntities((Entity) (Object) this, getBoundingBox().stretch(movement));
+		List<Entity> collisions = this.world.getOtherEntities((Entity) (Object) this, getBoundingBox().stretch(movement));
 
 		for (Entity entity : collisions) {
 			if (!CollisionUtils.shouldCollide((Entity) (Object) this, entity) && world.getBlockState(((AbstractMinecartEntity) (Object) this).getBlockPos()).getBlock() instanceof AbstractRailBlock) {

@@ -10,7 +10,7 @@ public class LinkartConfiguration implements ConfigData {
 	public boolean enableLinker = true;
 
 	@ConfigEntry.Gui.Tooltip
-	public boolean enableChain = true;
+	public boolean enableChain = false;
 
 	@ConfigEntry.Gui.Tooltip
 	public int pathfindingDistance = 8;

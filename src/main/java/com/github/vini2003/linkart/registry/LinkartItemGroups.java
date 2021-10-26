@@ -12,8 +12,6 @@ public class LinkartItemGroups {
 	public static void initialize() {
 		if (LinkartConfigurations.INSTANCE.getConfig().isLinkerEnabled()) {
 			LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.LINKER_ITEM));
-		} else if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-			LINKART_GROUP = FabricItemGroupBuilder.build(new Identifier(Linkart.ID, "linkart"), () -> new ItemStack(LinkartItems.CHAIN_ITEM));
 		}
 	}
 }

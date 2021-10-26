@@ -3,18 +3,19 @@ package com.github.vini2003.linkart.registry;
 import com.github.vini2003.linkart.accessor.AbstractMinecartEntityAccessor;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.minecraft.container.PlayerContainer;
-import net.minecraft.container.Slot;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.PacketByteBuf;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -39,13 +40,13 @@ public class LinkartNetworks {
 
 			context.getTaskQueue().execute(() -> {
 				PlayerEntity playerEntity = context.getPlayer();
-				PlayerContainer playerContainer = playerEntity.playerContainer;
+				PlayerScreenHandler playerContainer = playerEntity.playerScreenHandler;
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == LinkartItems.CHAIN_ITEM).findFirst();
+					Optional<Slot> optionalSlot = playerContainer.slots.stream().filter(slot -> slot.getStack().getItem() == Items.CHAIN).findFirst();
 
 					if (!optionalSlot.isPresent()) {
-						playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_desynchronization").formatted(Formatting.RED));
+						playerEntity.sendMessage(new TranslatableText("text.linkart.message.cart_link_failure_desynchronization").formatted(Formatting.RED), true);
 						return;
 					} else {
 						optionalSlot.get().getStack().decrement(1);
@@ -82,7 +83,7 @@ public class LinkartNetworks {
 				PlayerEntity playerEntity = context.getPlayer();
 
 				if (LinkartConfigurations.INSTANCE.getConfig().isChainEnabled()) {
-					ItemScatterer.spawn(playerEntity.world, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), new ItemStack(LinkartItems.CHAIN_ITEM));
+					ItemScatterer.spawn(playerEntity.world, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), new ItemStack(Items.CHAIN));
 				}
 			});
 		}));
