@@ -35,7 +35,7 @@ public abstract class EntityMixin {
 	@Shadow
 	public abstract double getZ();
 
-	@Inject(at = @At("RETURN"), method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;")
+	@Inject(at = @At("RETURN"), method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;")
 	void onToTag(NbtCompound tag, CallbackInfoReturnable<NbtCompound> callbackInformationReturnable) {
 		if ((Object) this instanceof AbstractMinecartEntity) {
 			AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;
@@ -51,7 +51,7 @@ public abstract class EntityMixin {
 		}
 	}
 
-	@Inject(at = @At("RETURN"), method = "fromTag(Lnet/minecraft/nbt/CompoundTag;)V")
+	@Inject(at = @At("RETURN"), method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V")
 	void onFromTag(NbtCompound tag, CallbackInfo callbackInformation) {
 		if ((Object) this instanceof AbstractMinecartEntity) {
 			AbstractMinecartEntity entity = (AbstractMinecartEntity) (Object) this;

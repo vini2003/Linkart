@@ -19,7 +19,6 @@ repositories() {
 	// modmuss50
 	maven {
 		name = "modmuss50"
-//		url = "https://maven.fabricmc.net/io/github/prospector/modmenu/"
 		url = "https://maven.terraformersmc.com/releases/"
 	}
 

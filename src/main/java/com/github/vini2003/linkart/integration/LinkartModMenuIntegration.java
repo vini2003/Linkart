@@ -12,10 +12,11 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class LinkartModMenuIntegration implements ModMenuApi {
-	@Override
-	public String getModId() {
-		return Linkart.ID;
-	}
+
+//	@Override
+//	public String getModId() {
+//		return Linkart.ID;
+//	}
 
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
